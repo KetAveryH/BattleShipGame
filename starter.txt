@@ -1,11 +1,10 @@
 Names: Ket Hollingsworth, Jason Bowman
 
-Project: Text-based Game Project (WordHunt AI)
+Project: Text-based Game Project (BattleShip)
 
 Project Goals: 
-We will make a program that acts as an AI assister in the game "Word Hunt".
-The program itself will not automatically play the game, however it will
-give one of the two players words to input in order to hopefully beat the
-other player. This way you can beat that one friend of yours who always
-somehow manages to get triple your score.
-
+We will create battleship, our first goal is being able to lay out the ships on the grid
+we will then integrate a random generator that places the ships on the other side, then 
+we will implement an attacking feature into the game, we will then implement an AI that
+randomly attacks points on your side, and if it hits a position it will either hit near
+your ship, or randomly on the board.
