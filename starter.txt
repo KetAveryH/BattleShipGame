@@ -1,0 +1,11 @@
+Names: Ket Hollingsworth, Jason Bowman
+
+Project: Text-based Game Project (WordHunt AI)
+
+Project Goals: 
+We will make a program that acts as an AI assister in the game "Word Hunt".
+The program itself will not automatically play the game, however it will
+give one of the two players words to input in order to hopefully beat the
+other player. This way you can beat that one friend of yours who always
+somehow manages to get triple your score.
+
