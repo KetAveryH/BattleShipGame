@@ -4,6 +4,40 @@ To begin we will want to start with the creation of an 8x8 grid
 white = '\u2B1C'
 blue = '\U0001f7e6'
 
+letcol = {'a':0,
+        'b':1,
+        'c':2,
+        'd':3,
+        'e':4,
+        'f':5,
+        'g':6,
+        'h':7,
+        'i':8,
+        'j':9,
+        'k':10,
+        'l':11,
+        'm':12,
+        'n':13,
+        'o':14,
+        'p':15,
+        'q':16,
+        'r':17,
+        's':18,
+        't':19,
+        'u':20,
+        'v':21,
+        'w':22,
+        'x':23,
+        'y':24,
+        'z':25,}
+def convertCord(col):
+        col = col.lower()
+        if col in letcol:
+            return letcol.get(col)
+        
+        return False
+
+
 class Board:
     
 
@@ -103,5 +137,22 @@ class Board:
         if ori == 'right':
             for x in range(l):
                 self.data[row][col+x] = white
+    
+    def shot(self, col, row):
+        """
+        This function will check whether the given point is a 'hit', 
+        'miss', or 'False' (meaning the position is not valid). A
+        position is not valid if it is out of bounds, or has been already hit.
+        """
+        if not( 0 <= row and row <= self.height) or not( 0 <= col and col <= self.width):   #check to make sure that the row and col are in the given range of self board
+            print('something went wrong, coords not in range')
+            return False
+        if self.data[col][row] == white:
+            return 'hit'
+        if self.data[col][row] == blue:
+            return 'miss'
+    
 
+    
+        
 d = Board(10,10)
