@@ -1,7 +1,9 @@
 """
 To begin we will want to start with the creation of an 8x8 grid
 """
-blue = '\u2B1C'
+white = '\u2B1C'
+blue = '\U0001f7e6'
+
 class Board:
     
 
@@ -9,7 +11,7 @@ class Board:
         """Construct objects of type Board, with the given width and height."""
         self.width = width
         self.height = height
-        self.data = [['\U0001f7e6']*width for row in range(height)]
+        self.data = [[blue]*width for row in range(height)]
 
     def __repr__(self):
         """This method returns a string representation
@@ -24,51 +26,82 @@ class Board:
             s += " "
             s += alphabet[col]
         s += '\n'  + ' ' 
-        s += blue*(self.width + 2) + '\n'                        
+        s += '\u2B1C'*(self.width + 2) + '\n'                        
         
         for row in range(1, self.height+1):
             s += str(row-1)
-            s += blue
+            s += '\u2B1C'
             for col in range(0, self.width):
                 s += self.data[row-1][col] + ''
             s += "\u2B1C"
             s += '\n'
         s += ' '
-        s += (self.width +1) * blue   # Bottom of the board
-        s += blue
+        s += (self.width +1) * '\u2B1C'   # Bottom of the board
+        s += '\u2B1C'
 
         return s       # Return the Board
 
     def allowsMove(self, col, row, l, ori):
-        #Up Orientation
-        if not( 0 <= row and row <= self.height) or not( 0 <= col and col <= self.width):
+        """Checks whether a ship placement will be allowed. Accepts:
+        Col, a number representing a letter where ship starts
+        Row, a number representing how far down to start
+        l, the length of the ship in question (>=1)
+        ori, either 'up' 'down' 'left' 'right'"""
+        if not( 0 <= row and row <= self.height) or not( 0 <= col and col <= self.width):   #check to make sure that the row and col are in the given range of self board
+            print('something went wrong, coords not in range')
             return False
-            return False
-        if ori == 'up':
-            if (row+1)-l < 0: 
+        if ori == 'up':      #Start for each orientation... 'up' 'down' 'left' 'right'
+            if (row+1)-l < 0:    #check to make sure that the L for each ori isn't too long for the board
+                print('you did something wrong, if up')
                 return False #Here we will reprompt the player in a later function
-            for x in range(l):
+            for x in range(l):   #check to make sure that the places we will place the ship are empty
                 if self.data[row-x][col] !=  blue:
+                    print("you did something wrong, for loop up")
                     return False
-            else:
-                return True
+            return True      #all good! let the magic happen
         if ori == 'down':
-            if (row)+l <= self.height: 
+            if (row)+l > self.height: 
+                print('you did something wrong, if down')
                 return False #Here we will reprompt the player in a later function
             for x in range(l):
                 if self.data[row+x][col] !=  blue:
+                    print("you did something wrong, for loop down")
                     return False
-            else:
-                return True
+            return True
         if ori == 'left':
             if (col+1)-l < 0:
+                print('you did something wrong, if left')
                 return False
             for x in range(l):
                 if self.data[row][col-x] !=  blue:
+                    print("you did something wrong, for loop left")
                     return False
-            
+            return True
+        if ori == 'right':
+            if row+l > self.width:
+                print('you did something wrong, if right')
+                return False
+            for x in range(l):
+                if self.data[row][col+x] != blue:
+                    print("you did something wrong, for loop right")
+                    return False
+            return True
+        print("you did something wrong, no ori assigned")
+        return False
 
-
-
+    def placeShip(self, col, row, l, ori):
+        """"""
+        if ori == 'up':
+            for x in range(l):
+                self.data[row-x][col] = white
+        if ori == 'down':
+            for x in range(l):
+                self.data[row+x][col] = white
+        if ori == 'left':
+            for x in range(l):
+                self.data[row][col-x] = white
+        if ori == 'right':
+            for x in range(l):
+                self.data[row][col+x] = white
 
 d = Board(10,10)
