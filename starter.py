@@ -49,7 +49,7 @@ class Board:
         self.height = height
         self.data = [[blue]*width for row in range(height)]
         self.data2 = [[weird]*width for row in range(height)]
-        self.data3 = [[red]*width for row in range(height)]
+        self.data3 = [[blue]*width for row in range(height)]
         self.data4 = [[red]*width for row in range(height)]
 
 
@@ -165,8 +165,7 @@ class Board:
         'miss', or 'False' (meaning the position is not valid). A
         position is not valid if it is out of bounds, or has been already hit.
         """
-        if player == "player":
-            
+        
         if not( 0 <= row and row <= self.height) or not( 0 <= col and col <= self.width):   #check to make sure that the row and col are in the given range of self board
             print('something went wrong, coords not in range')
             return False
