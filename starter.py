@@ -3,6 +3,8 @@ To begin we will want to start with the creation of an 8x8 grid
 """
 white = '\u2B1C'
 blue = '\U0001f7e6'
+red = '\U0001F7E5'
+weird = '\U0001F533'
 
 letcol = {'a':0,
         'b':1,
@@ -46,32 +48,51 @@ class Board:
         self.width = width
         self.height = height
         self.data = [[blue]*width for row in range(height)]
+        self.data2 = [[weird]*width for row in range(height)]
+        self.data3 = [[red]*width for row in range(height)]
+        self.data4 = [[red]*width for row in range(height)]
+
 
     def __repr__(self):
         """This method returns a string representation
             for an object of type Board.
         """
         alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-
+        
         s = ''                          # The string to return
         
         s += "   "                         #Code that labels each column
         for col in range(0, self.width):
             s += " "
             s += alphabet[col]
+        s += "       "
+        for col in range(0, self.width):
+            s += " "
+            s += alphabet[col]
         s += '\n'  + ' ' 
-        s += '\u2B1C'*(self.width + 2) + '\n'                        
+        s += '\u2B1C'*(self.width + 2) + "   " + '\u2B1C'*(self.width + 2) + "\n"
         
-        for row in range(1, self.height+1):
-            s += str(row-1)
+                               
+        
+        for row in range(0, self.height):
+            s += str(row)
             s += '\u2B1C'
             for col in range(0, self.width):
-                s += self.data[row-1][col] + ''
+                s += self.data[row][col] + ''
             s += "\u2B1C"
+            s += "  "
+            s += str(row)
+            s += '\u2B1C'
+            for col in range(0, self.width):
+                s += self.data2[row][col] + ''
+            s += "\u2B1C"
+
+
+
             s += '\n'
         s += ' '
-        s += (self.width +1) * '\u2B1C'   # Bottom of the board
-        s += '\u2B1C'
+        s += (self.width +2) * '\u2B1C' +  "   " + (self.width +2) * '\u2B1C' # Bottom of the board
+        
 
         return s       # Return the Board
 
@@ -138,12 +159,14 @@ class Board:
             for x in range(l):
                 self.data[row][col+x] = white
     
-    def shot(self, col, row):
+    def shot(self, col, row, player):
         """
         This function will check whether the given point is a 'hit', 
         'miss', or 'False' (meaning the position is not valid). A
         position is not valid if it is out of bounds, or has been already hit.
         """
+        if player == "player":
+            
         if not( 0 <= row and row <= self.height) or not( 0 <= col and col <= self.width):   #check to make sure that the row and col are in the given range of self board
             print('something went wrong, coords not in range')
             return False
@@ -156,3 +179,4 @@ class Board:
     
         
 d = Board(10,10)
+f = Board(10,10)
