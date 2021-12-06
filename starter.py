@@ -58,7 +58,6 @@ class Board:
         self.dataPSL = [[[],[],[],[],[],'good'],[[],[],[],[],'good'],[[],[],[],'good'],[[],[],[],'good'],[[],[],'good']]
         self.dataASL = [[[],[],[],[],[],'good'],[[],[],[],[],'good'],[[],[],[],'good'],[[],[],[],'good'],[[],[],'good']]
 
-
     def __repr__(self):
         """This method returns a string representation for an object of type Board."""
         alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
@@ -285,7 +284,7 @@ class Board:
                 for x in range(l):
                     self.dataAS[row][col+x] = black
                     self.dataASL[r][x] = [row, col+x]
-                        
+
     def isVertical(self, ship, p):
         horScore = 0
         verScore = 0 
@@ -365,10 +364,7 @@ class Board:
         else:
             print()
             # code that draws perimeter of a horizontal ship
-        
-            
-
-    
+          
     def randomPlacement(self, p):
         """
         This function will continuosly generate new coordinates and orientations until all ships are placed
@@ -407,9 +403,6 @@ class Board:
                 shipList.remove(randShip)
         return d
 
-                
-
-
     def validTarget(self, col, row, p):
         """Determines whether a selected target is valid, given a converted col, row, and p's turn"""
         if not( 0 <= row and row <= self.height) or not( 0 <= col and col <= self.width):   #check to make sure that the row and col are in the given range of self board
@@ -431,21 +424,41 @@ class Board:
         """
         if p == 'ai':#   If Ai's turn
             if self.dataPS[row][col] == black:# check to see what the ai is hitting on the players board
-                print('AI Hit!')
+                print("AI's Hit!")
                 self.dataPS[row][col] = red
                 self.dataAT[row][col] = red
             if self.dataPS[row][col] == blue:
-                print('AI Miss!')
+                print("AI's Miss!")
                 self.dataAT[row][col] = blue
         if p == 'player':#   If Players turn
             if self.dataAS[row][col] == black:# check to see what the player is hitting on the AI's board
-                print('Player Hit!')
+                print("Player's Hit!")
                 self.dataPT[row][col] = red
                 self.dataAS[row][col] = red
             if self.dataAS[row][col] == blue:
-                print('Player Miss!')
+                print("Player's Miss!")
                 self.dataPT[row][col] = blue
     
+    def randomShot(self, p):
+        row = random.randint(0,9)
+        col = random.randint(0,9)
+        if p == 'ai':#   If Ai's turn
+            if self.dataPS[row][col] == black:# check to see what the ai is hitting on the players board
+                print("AI's Hit!")
+                self.dataPS[row][col] = red
+                self.dataAT[row][col] = red
+            if self.dataPS[row][col] == blue:
+                print("AI's Miss!")
+                self.dataAT[row][col] = blue
+        if p == 'player':#   If Players turn
+            if self.dataAS[row][col] == black:# check to see what the player is hitting on the AI's board
+                print("Player's Hit!")
+                self.dataPT[row][col] = red
+                self.dataAS[row][col] = red
+            if self.dataAS[row][col] == blue:
+                print("Player's Miss!")
+                self.dataPT[row][col] = blue
+
     #The Below functions return True if the type of ship is sunk and False if they have not sunk
 
     def carrierSunk(self, p):  # Example FN, can be used to write the next four. Then afterwards, we can write a winsFor which checks all the ai or player ships depending on input p. This will be the win condition that ends the game.
@@ -477,7 +490,6 @@ class Board:
                     return True
             else:
                 return False
-
     def battleshipSunk(self, p):
         count = 0
         if p == 'player':
@@ -564,7 +576,6 @@ class Board:
                     return True
             else:
                 return False
-
     def destroyerSunk(self, p):
         count = 0
         if p == 'player':
@@ -593,8 +604,7 @@ class Board:
                     print('THE ENEMY DESTROYER HAS SUNK') 
                     return True
             else:
-                return False
-            
+                return False           
     def allSunk(self, p):
         """
         This runs all of the above functions, and if they are all true it returns true and prints the end of the game.
