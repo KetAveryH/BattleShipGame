@@ -1,3 +1,5 @@
+import random
+
 """
 To begin we will want to start with the creation of an 8x8 grid
 """
@@ -6,6 +8,7 @@ blue = '\U0001f7e6'
 red = '\U0001F7E5'
 weird = '\U0001F533'
 black = '\U00002B1B'
+
 
 # Create a converter, so we can take in A4 or C2, then actually use 04 or 32
 letcol = {'a':0,
@@ -181,7 +184,7 @@ class Board:
                         return False
                 return True
             if ori == 'right':
-                if row+l > self.width:
+                if col+l > self.width:
                     print('you did something wrong, if right')
                     return False
                 for x in range(l):
@@ -220,7 +223,7 @@ class Board:
                         return False
                 return True
             if ori == 'right':
-                if row+l > self.width:
+                if col+l > self.width:
                     print('you did something wrong, if right')
                     return False
                 for x in range(l):
@@ -282,7 +285,131 @@ class Board:
                 for x in range(l):
                     self.dataAS[row][col+x] = black
                     self.dataASL[r][x] = [row, col+x]
+                        
+    def isVertical(self, ship, p):
+        horScore = 0
+        verScore = 0 
+        carrierLoc = self.dataPSL[0][0:5]
+        battleshipLoc = self.dataPSL[1][0:4]
+        cruiserLoc = self.dataPSL[2][0:3]
+        submarineLoc = self.dataPSL[3][0:3]
+        destroyerLoc = self.dataPSL[4][0:2]
+        if ship == 'carrier':
+            for x in range(4):
+                if carrierLoc[x][0] == carrierLoc[x+1][0]:
+                    verScore += 1
+                if carrierLoc[x][1] == carrierLoc[x+1][0]:
+                    horScore += 1
+                if verScore >= 4:
+                    return True
+                if horScore >= 4:
+                    return False
+        if ship == 'battleship':
+            for x in range(3):
+                if carrierLoc[x][0] == carrierLoc[x+1][0]:
+                    verScore += 1
+                if carrierLoc[x][1] == carrierLoc[x+1][0]:
+                    horScore += 1
+                if verScore >= 3:
+                    return True
+                if horScore >= 3:
+                    return False
+        if ship == 'cruiser':
+            for x in range(2):
+                if carrierLoc[x][0] == carrierLoc[x+1][0]:
+                    verScore += 1
+                if carrierLoc[x][1] == carrierLoc[x+1][0]:
+                    horScore += 1
+                if verScore >= 2:
+                    return True
+                if horScore >= 2:
+                    return False
+        if ship == 'submarine':
+            for x in range(2):
+                if carrierLoc[x][0] == carrierLoc[x+1][0]:
+                    verScore += 1
+                if carrierLoc[x][1] == carrierLoc[x+1][0]:
+                    horScore += 1
+                if verScore >= 2:
+                    return True
+                if horScore >= 2:
+                    return False
+        if ship == 'destroyer':
+            for x in range(1):
+                if carrierLoc[x][0] == carrierLoc[x+1][0]:
+                    verScore += 1
+                if carrierLoc[x][1] == carrierLoc[x+1][0]:
+                    horScore += 1
+                if verScore >= 1:
+                    return True
+                if horScore >= 1:
+                    return False
+
+    def shipPerimeter(self, ship, p):
+        """
+        For this function we will input the ship and player, and it will return a list of points around the ship
+        The way we do this is we just add 1 and subtract 1 from each column value if vertical, or we add 1 and 
+        subtract 1 from each row if horizontal. 
+        """
+        carrierLoc = self.dataPSL[0][0:5]
+        battleshipLoc = self.dataPSL[1][0:4]
+        cruiserLoc = self.dataPSL[2][0:3]
+        submarineLoc = self.dataPSL[3][0:3]
+        destroyerLoc = self.dataPSL[4][0:2]
+        #THIS STILL HAS TO BE CREATED
+
+        if self.isVertical(ship) == True:
+            #code that draws perimeter of a vertical ship
+            for x in range(self.data):
+                print()
+        else:
+            print()
+            # code that draws perimeter of a horizontal ship
+        
+            
+
     
+    def randomPlacement(self, p):
+        """
+        This function will continuosly generate new coordinates and orientations until all ships are placed
+        """
+        x=0
+        shipList = ['carrier', 'battleship', 'cruiser', 'submarine', 'destroyer']
+        oriList = ['right', 'left', 'up', 'down']
+        while x < 5:
+            randCol = random.randint(0,9)
+            randRow = random.randint(0,9)
+            randShip = random.choice(shipList)
+            randOri = random.choice(oriList)
+
+            if self.allowsMove(randCol, randRow, randShip, randOri, p) == True:
+                self.placeShip(randCol, randRow, randShip, randOri, p)
+                x += 1
+                shipList.remove(randShip)
+        return d
+
+    def stratRandomPlacement(self, p): #in order to make this function, it would be way easier to make another function that defines the area around each ship.
+        """
+        This function will add on to the previous function by adding constraints, boats may never be touching
+        """
+        x=0
+        shipList = ['carrier', 'battleship', 'cruiser', 'submarine', 'cruiser']
+        oriList = ['right', 'left', 'up', 'down']
+        while x < 5:
+            randCol = random.randint(0,9)
+            randRow = random.randint(0,9)
+            randShip = random.choice(shipList)
+            randOri = random.choice(oriList)
+
+            if self.allowsMove(randCol, randRow, randShip, randOri, p) == True:
+                self.placeShip(randCol, randRow, randShip, randOri, p)
+                x += 1
+                shipList.remove(randShip)
+        return d
+
+                
+
+
     def validTarget(self, col, row, p):
         """Determines whether a selected target is valid, given a converted col, row, and p's turn"""
         if not( 0 <= row and row <= self.height) or not( 0 <= col and col <= self.width):   #check to make sure that the row and col are in the given range of self board
@@ -482,28 +609,28 @@ class Board:
 
 d = Board(10,10)
 
-d.placeShip(4,4,'destroyer','right','player')
-d.shot(4,4,'ai')
-d.shot(5,4,'ai')
-d.placeShip(4,5,'battleship','right','player')
-d.shot(4,5,'ai')
-d.shot(5,5,'ai')
-d.shot(6,5,'ai')
-d.shot(7,5,'ai')
-d.placeShip(4,6,'cruiser','right','player')
-d.shot(4,6, 'ai')
-d.shot(5,6, 'ai')
-d.shot(6,6, 'ai')
-d.placeShip(4,7,'submarine','right','player')
-d.shot(4,7, 'ai')
-d.shot(5,7, 'ai')
-d.shot(6,7, 'ai')
-d.placeShip(4,8,'carrier','right','player')
-d.shot(4,8, 'ai')
-d.shot(5,8, 'ai')
-d.shot(6,8, 'ai')
-d.shot(7,8, 'ai')
-d.shot(8,8, 'ai')
+# d.placeShip(4,4,'destroyer','right','player')
+# d.shot(4,4,'ai')
+# d.shot(5,4,'ai')
+# d.placeShip(4,5,'battleship','right','player')
+# d.shot(4,5,'ai')
+# d.shot(5,5,'ai')
+# d.shot(6,5,'ai')
+# d.shot(7,5,'ai')
+# d.placeShip(4,6,'cruiser','right','player')
+# d.shot(4,6, 'ai')
+# d.shot(5,6, 'ai')
+# d.shot(6,6, 'ai')
+# d.placeShip(4,7,'submarine','right','player')
+# d.shot(4,7, 'ai')
+# d.shot(5,7, 'ai')
+# d.shot(6,7, 'ai')
+# d.placeShip(4,8,'carrier','right','player')
+# d.shot(4,8, 'ai')
+# d.shot(5,8, 'ai')
+# d.shot(6,8, 'ai')
+# d.shot(7,8, 'ai')
+# d.shot(8,8, 'ai')
 
 
 """we meed to build functiond that need to check weather the individual ships are sunk.
