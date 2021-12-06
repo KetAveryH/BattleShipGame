@@ -615,6 +615,13 @@ class Board:
                 return True
             else:
                 return False
+        
+        if p == 'ai':
+            if self.carrierSunk('ai') == True and self.battleshipSunk('ai') == True and self.cruiserSunk('ai') == True and self.submarineSunk('ai') == True and self.destroyerSunk('ai') == True:
+                print("GAME OVER, " + p + "Lost")
+                return True
+            else:
+                return False
             
 
 d = Board(10,10)
