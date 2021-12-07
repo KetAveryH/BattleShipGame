@@ -286,6 +286,7 @@ class Board:
                     self.dataASL[r][x] = [row, col+x]
 
     def isVertical(self, ship, p):
+        """Checks whether a given ship for a given p player is orientated vertically or horizontally. True if vertical, false if otherwise."""
         horScore = 0
         verScore = 0 
         carrierLoc = self.dataPSL[0][0:5]
@@ -355,16 +356,17 @@ class Board:
         cruiserLoc = self.dataPSL[2][0:3]
         submarineLoc = self.dataPSL[3][0:3]
         destroyerLoc = self.dataPSL[4][0:2]
+
         #THIS STILL HAS TO BE CREATED
 
-        if self.isVertical(ship) == True:
+        if self.isVertical(ship, p) == True:
             #code that draws perimeter of a vertical ship
-            for x in range(self.data):
+            for x in range():
                 print()
         else:
             print()
             # code that draws perimeter of a horizontal ship
-          
+        
     def randomPlacement(self, p):
         """
         This function will continuosly generate new coordinates and orientations until all ships are placed
@@ -458,6 +460,20 @@ class Board:
             if self.dataAS[row][col] == blue:
                 print("Player's Miss!")
                 self.dataPT[row][col] = blue
+
+    def isClear(self):
+        """checks whether a gameboard is clear"""
+        for col in range(self.width):
+            for row in range(self.height):
+                if self.dataPS[row][col] != blue:
+                    return False
+                if self.dataPT[row][col] != weird:
+                    return False
+                if self.dataAS[row][col] != blue:
+                    return False
+                if self.dataAT[row][col] != weird:
+                    return False
+        return True
 
     #The Below functions return True if the type of ship is sunk and False if they have not sunk
 
@@ -623,6 +639,88 @@ class Board:
             else:
                 return False
             
+    def hostGame(self):
+        """Function which builds the game, playing it until one player has sunk all of their opponents ships. Player vs. AI"""
+        if self.isClear() == False:
+            return print("Your Board is not clear! Clear it, then you can start a new game.")
+        print("Welcome to Battleship!")
+        print("We will begin by placing your ships...")
+        while True:#     Carrier
+            colrow = str(input("Which grid tile would you like to start your aircraft carrier on (length 5)?  Use form A6, G4, etc.  -  "))
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori.lower()
+            if self.allowsMove(col, row, 'carrier', ori, 'player'):
+                self.placeShip(col, row, 'carrier', ori, 'player')
+                print(self)
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        while True:#     Battleship
+            colrow = str(input("Which grid tile would you like to start your battleship on (length 4)?  Use form A6, G4, etc.  -  "))
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori.lower()
+            if self.allowsMove(col, row, 'battleship', ori, 'player'):
+                self.placeShip(col, row, 'battleship', ori, 'player')
+                print(self)
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        while True: #Submarine
+            colrow = str(input("Which grid tile would you like to start your submarine on (length 3)?  Use form A6, G4, etc.  -  "))
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori.lower()
+            if self.allowsMove(col, row, 'submarine', ori, 'player'):
+                self.placeShip(col, row, 'submarine', ori, 'player')
+                print(self)
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        while True:#Cruiser
+            colrow = str(input("Which grid tile would you like to start your cruiser on (length 3)?  Use form A6, G4, etc.  -  "))
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori.lower()
+            if self.allowsMove(col, row, 'cruiser', ori, 'player'):
+                self.placeShip(col, row, 'cruiser', ori, 'player')
+                print(self)
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        while True:#Destroyer
+            colrow = str(input("Which grid tile would you like to start your destroyer on (length 2)?  Use form A6, G4, etc.  -  "))
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori.lower()
+            if self.allowsMove(col, row, 'destroyer', ori, 'player'):
+                self.placeShip(col, row, 'destroyer', ori, 'player')
+                print(self)
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        
+        #   END OF PLAYER SHIP PLACING, START OF AI SHIP PLCEMENT
+
+        #   temporary
+        self.placeShip(0,0,'carrier','down','ai')
+        self.placeShip(4,2,'battleship','right','ai')
+        self.placeShip(1,6,'submarine','down','ai')
+        self.placeShip(9,8,'cruiser','left','ai')
+        self.placeShip(4,6,'destroyer','right','ai')
+        #   temporary
+
+        #   END OF AI SHIP PLACEMENT, START OF PLAYER ROUND 1!
+
+
+
+
 
 d = Board(10,10)
 
