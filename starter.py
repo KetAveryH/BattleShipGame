@@ -647,6 +647,7 @@ class Board:
             else:
                 return False
             
+            
     def hostGame(self):
         """Function which builds the game, playing it until one player has sunk all of their opponents ships. Player vs. AI"""
         if self.isClear() == False:
@@ -656,10 +657,23 @@ class Board:
         print("\nWe will begin by placing your ships...")
         while True:#     Carrier
             colrow = str(input("Which grid tile would you like to start your aircraft carrier on (length 5)?  Use form A6, G4, etc.  -  "))
+            """For some reason, when you input a random character like @ in the first position it counts it as A"""
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
             col = int(convertCord(colrow[0]))
-            row = int(colrow[1])
+            row = int((colrow[1]))
             ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
-            ori.lower()
+            ori = ori.lower()
             if self.allowsMove(col, row, 'carrier', ori, 'player'):
                 self.placeShip(col, row, 'carrier', ori, 'player')
                 print(self)
@@ -670,8 +684,8 @@ class Board:
             colrow = str(input("Which grid tile would you like to start your battleship on (length 4)?  Use form A6, G4, etc.  -  "))
             col = int(convertCord(colrow[0]))
             row = int(colrow[1])
-            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
-            ori.lower()
+            ori = input("How would you like to place it? up, down, left or right?  -  ")
+            ori = ori.lower()
             if self.allowsMove(col, row, 'battleship', ori, 'player'):
                 self.placeShip(col, row, 'battleship', ori, 'player')
                 print(self)
@@ -715,6 +729,7 @@ class Board:
             else:
                 print("Oh no! Something went wrong... Let's try that again")
         
+        #   WE ALSO NEED TO ADD THE DECLARING OF SHIPS SINKING
         #   END OF PLAYER SHIP PLACING, START OF AI SHIP PLCEMENT
 
         #   temporary
