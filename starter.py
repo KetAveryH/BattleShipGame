@@ -51,10 +51,10 @@ class Board:
         """Construct objects of type Board, with the given width and height."""
         self.width = width
         self.height = height
-        self.dataPS = [[blue]*width for row in range(height)]
-        self.dataPT = [[weird]*width for row in range(height)]
-        self.dataAS = [[blue]*width for row in range(height)]
-        self.dataAT = [[weird]*width for row in range(height)]
+        self.dataPS = [[blue]*width for row in range(height)] #Player Ship
+        self.dataPT = [[weird]*width for row in range(height)] #Player Target
+        self.dataAS = [[blue]*width for row in range(height)] #AI Ship
+        self.dataAT = [[weird]*width for row in range(height)] #AI target
         self.dataPSL = [[[],[],[],[],[],'good'],[[],[],[],[],'good'],[[],[],[],'good'],[[],[],[],'good'],[[],[],'good']]
         self.dataASL = [[[],[],[],[],[],'good'],[[],[],[],[],'good'],[[],[],[],'good'],[[],[],[],'good'],[[],[],'good']]
 
@@ -130,6 +130,14 @@ class Board:
         s += (self.width +2) * black +  "   " + (self.width +2) * black # Bottom of the board
         
         print(s)       # Return the Board
+
+    def clearBoard(self, p):
+            if p == 'player':
+                self.dataPS = [[blue]*self.width for row in range(self.height)]
+                self.dataPT = [[weird]*self.width for row in range(self.height)]
+            if p == 'ai':
+                self.dataAS = [[blue]*self.width for row in range(self.height)]
+                self.dataAT = [[weird]*self.width for row in range(self.height)]
 
     def allowsMove(self, col, row, ship, ori, p):
         """Checks whether a ship placement will be allowed. Accepts:
@@ -644,7 +652,8 @@ class Board:
         if self.isClear() == False:
             return print("Your Board is not clear! Clear it, then you can start a new game.")
         print("Welcome to Battleship!")
-        print("We will begin by placing your ships...")
+        print(self)
+        print("\nWe will begin by placing your ships...")
         while True:#     Carrier
             colrow = str(input("Which grid tile would you like to start your aircraft carrier on (length 5)?  Use form A6, G4, etc.  -  "))
             col = int(convertCord(colrow[0]))
@@ -718,7 +727,36 @@ class Board:
 
         #   END OF AI SHIP PLACEMENT, START OF PLAYER ROUND 1!
 
+        #   Start of a round
 
+        while True:
+            print("Player, it's your turn! Where would you like to target your opponent's board?")
+            while True:
+                colrow = str(input("Remember to input in the form A7, D4, I3, etc.  -  "))
+                col = int(convertCord(colrow[0]))
+                row = int(colrow[1])
+                if self.validTarget(col, row, 'player'):
+                    self.shot(col, row, 'player')
+                    print(self)
+                    break
+                else:
+                    print("Oh no! Something went wrong... lets try that again...")
+            print("Now, It's AI's turn...")
+            cc = 0
+            rr = 0
+            self.shot(cc,rr,'ai')
+            cc +=1
+            rr +=1
+
+
+#  Next Steps...
+"""In no particular order:
+    build the end functions that check for a sunk board
+    building off that, the functions have to print player's Ship Sunk when a given ship sinks
+    AI targeting system
+    AI ship placement system
+    
+    Right now, the player placement is fully functional, and basically so is player targeting. Just need AI time."""
 
 
 

@@ -1,0 +1,9 @@
+Right now, running hostGame() on a given board will properly prompt the player to place their ships, then allow the player to target the ai's board. 
+This will continue running, and the game will accurately tell if targets or positions are invalid, and display the board accurately for every move.
+The unimplemented parts include random ai placement, and random ai targeting. Currently, the AI has a board and targets in a line.
+
+Next Steps Include:
+ implementing our functions that say when ships are sunk, and that end the game when a player wins
+ creating advanced AI, then putting it into the game. After that, it should be fully functional and playable. Right now, we don't necessarily play a full round,
+    but almost all funcitons are built and player's entire game experience has been built and polished.
+ Final polishing? Extra features? Testing? 
