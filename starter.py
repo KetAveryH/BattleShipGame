@@ -488,6 +488,7 @@ class Board:
     def carrierSunk(self, p):  # Example FN, can be used to write the next four. Then afterwards, we can write a winsFor which checks all the ai or player ships depending on input p. This will be the win condition that ends the game.
         """Checks the locations of the carrier in p player's board, and sticks sunk into the location list if sunk."""
         count = 0
+        print("this function is being run")
         if p == 'player':                          
             if self.dataPSL[0][5] == 'sunk':
                 True
@@ -628,7 +629,8 @@ class Board:
                     print('THE ENEMY DESTROYER HAS SUNK') 
                     return True
             else:
-                return False           
+                return False      
+    #def shipsSunk(self, p): #This function will basically run through all of the functions above and declare whenever a new ship has been destroyed
     def allSunk(self, p):
         """
         This runs all of the above functions, and if they are all true it returns true and prints the end of the game.
@@ -729,7 +731,7 @@ class Board:
             else:
                 print("Oh no! Something went wrong... Let's try that again")
         
-        #   WE ALSO NEED TO ADD THE DECLARING OF SHIPS SINKING
+        
         #   END OF PLAYER SHIP PLACING, START OF AI SHIP PLCEMENT
 
         #   temporary
@@ -748,8 +750,26 @@ class Board:
             print("Player, it's your turn! Where would you like to target your opponent's board?")
             while True:
                 colrow = str(input("Remember to input in the form A7, D4, I3, etc.  -  "))
+                try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                    int(colrow[1])
+                except ValueError:
+                    print("Make sure you input proper coordinates!")
+                    continue
+                try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                    int(colrow[0])
+                except ValueError:
+                    pass
+                else:
+                    print("Make sure you input proper coordinates!")
+                    continue
                 col = int(convertCord(colrow[0]))
                 row = int(colrow[1])
+                self.carrierSunk('ai')                  #For some reason it takes 1 extra turn for the 'good' 'sunk' board to update
+                self.battleshipSunk('ai')
+                self.cruiserSunk('ai')
+                self.submarineSunk('ai')
+                self.destroyerSunk('ai')
+                
                 if self.validTarget(col, row, 'player'):
                     self.shot(col, row, 'player')
                     print(self)
