@@ -92,9 +92,9 @@ class Board:
         s += '\n\n' + '        YOUR SHIPS                 ENEMY SHIPS'
         s += '\n\n' + '           ' + self.dataPSL[0][5] + '    <   CARRIER   >     ' + self.dataASL[0][5]
         s += '\n' + '           ' + self.dataPSL[1][4] + '    <  BATTLESHIP >     ' + self.dataASL[1][4]
-        s += '\n' + '           ' + self.dataPSL[1][4] + '    <   CRUISER   >     ' + self.dataASL[1][4]
-        s += '\n' + '           ' + self.dataPSL[1][4] + '    <  SUBMARINE  >     ' + self.dataASL[1][4]
-        s += '\n' + '           ' + self.dataPSL[1][4] + '    <  DESTROYER  >     ' + self.dataASL[1][4]
+        s += '\n' + '           ' + self.dataPSL[1][4] + '    <   CRUISER   >     ' + self.dataASL[2][3]
+        s += '\n' + '           ' + self.dataPSL[1][4] + '    <  SUBMARINE  >     ' + self.dataASL[3][3]
+        s += '\n' + '           ' + self.dataPSL[1][4] + '    <  DESTROYER  >     ' + self.dataASL[4][2]
 
         return s       # Return the Board
 
@@ -684,6 +684,18 @@ class Board:
                 print("Oh no! Something went wrong... Let's try that again")
         while True:#     Battleship
             colrow = str(input("Which grid tile would you like to start your battleship on (length 4)?  Use form A6, G4, etc.  -  "))
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
             col = int(convertCord(colrow[0]))
             row = int(colrow[1])
             ori = input("How would you like to place it? up, down, left or right?  -  ")
@@ -696,6 +708,18 @@ class Board:
                 print("Oh no! Something went wrong... Let's try that again")
         while True: #Submarine
             colrow = str(input("Which grid tile would you like to start your submarine on (length 3)?  Use form A6, G4, etc.  -  "))
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
             col = int(convertCord(colrow[0]))
             row = int(colrow[1])
             ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
@@ -708,6 +732,18 @@ class Board:
                 print("Oh no! Something went wrong... Let's try that again")
         while True:#Cruiser
             colrow = str(input("Which grid tile would you like to start your cruiser on (length 3)?  Use form A6, G4, etc.  -  "))
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
             col = int(convertCord(colrow[0]))
             row = int(colrow[1])
             ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
@@ -720,6 +756,18 @@ class Board:
                 print("Oh no! Something went wrong... Let's try that again")
         while True:#Destroyer
             colrow = str(input("Which grid tile would you like to start your destroyer on (length 2)?  Use form A6, G4, etc.  -  "))
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
             col = int(convertCord(colrow[0]))
             row = int(colrow[1])
             ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
@@ -770,12 +818,13 @@ class Board:
                 self.submarineSunk('ai')
                 self.destroyerSunk('ai')
                 
-                if self.validTarget(col, row, 'player'):
-                    self.shot(col, row, 'player')
-                    print(self)
-                    break
-                else:
-                    print("Oh no! Something went wrong... lets try that again...")
+                if ( 0 <= row and row <= self.height) or not( 0 <= col and col <= self.width):
+                    if self.validTarget(col, row, 'player'):
+                        self.shot(col, row, 'player')
+                        print(self)
+                        break
+                    else:
+                        print("Oh no! Something went wrong... lets try that again...")
             print("Now, It's AI's turn...")
             cc = 0
             rr = 0
