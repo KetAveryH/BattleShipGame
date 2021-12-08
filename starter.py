@@ -798,18 +798,24 @@ class Board:
             print("Player, it's your turn! Where would you like to target your opponent's board?")
             while True:
                 colrow = str(input("Remember to input in the form A7, D4, I3, etc.  -  "))
-                try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
-                    int(colrow[1])
-                except ValueError:
-                    print("Make sure you input proper coordinates!")
-                    continue
-                try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
-                    int(colrow[0])
-                except ValueError:
-                    pass
-                else:
-                    print("Make sure you input proper coordinates!")
-                    continue
+                if len(colrow[1]) > 2:
+                    try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                        int(colrow[1])
+                    except IndexError and ValueError:
+                        print("Make sure you input proper coordinates!")
+                        continue
+                    try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                        int(colrow[1])
+                    except ValueError :
+                        print("Make sure you input proper coordinates!")
+                        continue
+                    try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                        int(colrow[0])
+                    except ValueError:
+                        pass
+                    else:
+                        print("Make sure you input proper coordinates!")
+                        continue
                 col = int(convertCord(colrow[0]))
                 row = int(colrow[1])
                 self.carrierSunk('ai')                  #For some reason it takes 1 extra turn for the 'good' 'sunk' board to update
@@ -826,11 +832,7 @@ class Board:
                     else:
                         print("Oh no! Something went wrong... lets try that again...")
             print("Now, It's AI's turn...")
-            cc = 0
-            rr = 0
-            self.shot(cc,rr,'ai')
-            cc +=1
-            rr +=1
+            d.randomShot('ai')
 
 
 #  Next Steps...
