@@ -45,6 +45,32 @@ def convertCord(col):
     
     return False
 
+def getcolrow(self):
+    while True:
+        colrow = input("Remember to input in the form A7, D4, I3, etc.  -  ")
+        if len(colrow) > 2 or len(colrow) < 2:
+            print("Not understood!")
+            continue
+
+        try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+            let = colrow[0]
+            let = let.upper()
+            if let not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+                print("Not understood!")
+                continue
+            dig = int(colrow[1])
+            if dig not in [range(self.width)]:
+                print("Not understood!")
+                continue
+
+            return let, dig
+        except:
+            print("Not understood!")
+            continue
+
+
+
+
 class Board:
 
     def __init__(self, width, height):
@@ -797,27 +823,12 @@ class Board:
         while True:
             print("Player, it's your turn! Where would you like to target your opponent's board?")
             while True:
-                colrow = str(input("Remember to input in the form A7, D4, I3, etc.  -  "))
-                if len(colrow[1]) > 2:
-                    try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
-                        int(colrow[1])
-                    except IndexError and ValueError:
-                        print("Make sure you input proper coordinates!")
-                        continue
-                    try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
-                        int(colrow[1])
-                    except ValueError :
-                        print("Make sure you input proper coordinates!")
-                        continue
-                    try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
-                        int(colrow[0])
-                    except ValueError:
-                        pass
-                    else:
-                        print("Make sure you input proper coordinates!")
-                        continue
-                col = int(convertCord(colrow[0]))
-                row = int(colrow[1])
+                let, dig = getcolrow(self)
+                col = int(convertCord(let))
+                row = dig
+                print("col,row are", col, row)
+
+
                 self.carrierSunk('ai')                  #For some reason it takes 1 extra turn for the 'good' 'sunk' board to update
                 self.battleshipSunk('ai')
                 self.cruiserSunk('ai')
@@ -844,7 +855,9 @@ class Board:
     
     Right now, the player placement is fully functional, and basically so is player targeting. Just need AI time."""
 
-
+#in the creation of the AI, you will use the targets that have been placed to create a heatmap, however there are certain cases where you know
+# for a fact that there must be a ship in the next location, and if so it can spend the rest of its moves trying to get to the other ship faster
+# I wonder if this would increase the speed.
 
 d = Board(10,10)
 
