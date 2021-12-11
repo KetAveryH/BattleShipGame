@@ -740,7 +740,7 @@ class Board:
         correspondingOri = self.dataPrevShot[2]
         direction = self.dataPrevShot[3]
         sunkLength = self.dataPrevShot[4]
-        orstateDestroyer = copy.deepcopy(d.destroyerSunk('player'))
+        orstateDestroyer = copy.deepcopy(self.destroyerSunk('player'))
 
         ori = random.choice(correspondingOri[-1])   #Picks a random valid direction from the most recent correspondingOrientation
         col = groupHits[-1][0]
@@ -753,13 +753,82 @@ class Board:
                 self.dataAT[row-1][col] = red #changes data state on both boards to 'hit'
                 direction = 'U'               #locks direction to 'U' aka Up
                 groupHits += [[col,row-1]]               # Adds a new coordinate to groupHit of type list, which allows it to add a new list of coords within the list
-                if orstateDestroyer  
+                
+                if orstateDestroyer == False and self.destroyerSunk('player') == True: #if the original state of the destroyer was false, and after the move the destroyer sunk, we want to add this to the summation of sunk ships, our 5th data variable, AKA sunk length
+                    sunkLength += 2
+                if sunkLength == len(groupHits):
+                    state = 0
+                if len(groupHits)-sunkLength > 0:
+                    state = 2
+
+                    
             if self.dataPS[row-1][col] == blue:    
                 print("AI's Miss!")
-                self.dataAT[row][col] = blue
+                self.dataAT[row-1][col] = blue
             correspondingOri[-1].remove('U') 
-        
+        if ori == "D":
+            #Performing the shot
+            if self.dataPS[row+1][col] == black:# checks one above if it hits 
+                print("AI's Hit!")
+                self.dataPS[row+1][col] = red
+                self.dataAT[row+1][col] = red #changes data state on both boards to 'hit'
+                direction = 'U'               #locks direction to 'D' aka Down
+                groupHits += [[col,row+1]]               # Adds a new coordinate to groupHit of type list, which allows it to add a new list of coords within the list
+                
+                if orstateDestroyer == False and self.destroyerSunk('player') == True: #if the original state of the destroyer was false, and after the move the destroyer sunk, we want to add this to the summation of sunk ships, our 5th data variable, AKA sunk length
+                    sunkLength += 2
+                if sunkLength == len(groupHits):
+                    state = 0
+                if len(groupHits)-sunkLength > 0:
+                    state = 2
 
+                    
+            if self.dataPS[row+1][col] == blue:    
+                print("AI's Miss!")
+                self.dataAT[row+1][col] = blue
+            correspondingOri[-1].remove('D') 
+        if ori == "L":
+            #Performing the shot
+            if self.dataPS[row][col-1] == black:# checks one above if it hits 
+                print("AI's Hit!")
+                self.dataPS[row][col-1] = red
+                self.dataAT[row][col-1] = red #changes data state on both boards to 'hit'
+                direction = 'U'               #locks direction to 'L' aka Left
+                groupHits += [[col-1,row]]               # Adds a new coordinate to groupHit of type list, which allows it to add a new list of coords within the list
+                
+                if orstateDestroyer == False and self.destroyerSunk('player') == True: #if the original state of the destroyer was false, and after the move the destroyer sunk, we want to add this to the summation of sunk ships, our 5th data variable, AKA sunk length
+                    sunkLength += 2
+                if sunkLength == len(groupHits):
+                    state = 0
+                if len(groupHits)-sunkLength > 0:
+                    state = 2
+
+                    
+            if self.dataPS[row][col-1] == blue:    
+                print("AI's Miss!")
+                self.dataAT[row][col-1] = blue
+            correspondingOri[-1].remove('L') 
+        if ori == "R":
+            #Performing the shot
+            if self.dataPS[row][col+1] == black:# checks one above if it hits 
+                print("AI's Hit!")
+                self.dataPS[row][col+1] = red
+                self.dataAT[row][col+1] = red #changes data state on both boards to 'hit'
+                direction = 'U'               #locks direction to 'R' aka Right
+                groupHits += [[col+1,row]]               # Adds a new coordinate to groupHit of type list, which allows it to add a new list of coords within the list
+                
+                if orstateDestroyer == False and self.destroyerSunk('player') == True: #if the original state of the destroyer was false, and after the move the destroyer sunk, we want to add this to the summation of sunk ships, our 5th data variable, AKA sunk length
+                    sunkLength += 2
+                if sunkLength == len(groupHits):
+                    state = 0
+                if len(groupHits)-sunkLength > 0:
+                    state = 2
+
+                    
+            if self.dataPS[row][col+1] == blue:    
+                print("AI's Miss!")
+                self.dataAT[row][col+1] = blue
+            correspondingOri[-1].remove('R') 
     def aiBrain(self):
                 """
                 Within this function we will determine the next move of the AI, it will cycle between behavorial states.
