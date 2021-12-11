@@ -1,6 +1,6 @@
 import random
 import copy
-
+import time
 """
 To begin we will want to start with the creation of an 8x8 grid
 """
@@ -10,6 +10,8 @@ red = '\U0001F7E5'
 weird = '\U0001F533'
 black = '\U00002B1B'
 
+playerWinCount = 0
+aiWinCount = 0
 
 # Create a converter, so we can take in A4 or C2, then actually use 04 or 22 (index starts at 0)
 letcol = {'a':0,
@@ -50,18 +52,21 @@ def getcolrow(self):
     while True:
         colrow = input("Remember to input in the form A7, D4, I3, etc.  -  ")
         if len(colrow) > 2 or len(colrow) < 2:
-            print("Not understood!")
+            print("Not understood! Target Length...")
             continue
 
         try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
             let = colrow[0]
             let = let.upper()
             if let not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-                print("Not understood!")
+                print("Not understood! Not a letter...")
+                continue
+            if convertCord(let) not in [*range(self.width)]:
+                print("Letter out of range!")
                 continue
             dig = int(colrow[1])
-            if dig not in [range(self.width)]:
-                print("Not understood!")
+            if dig not in [*range(self.height)]:
+                print("Number out of range!")
                 continue
 
             return let, dig
@@ -118,12 +123,12 @@ class Board:
         s += ' '
         s += (self.width +2) * '\u2B1C' +  "   " + (self.width +2) * '\u2B1C' # Bottom of the board
         #Below, table for whether things are sunk or not
-        s += '\n\n' + '        YOUR SHIPS                 ENEMY SHIPS'
+        s += '\n\n' + '       PLAYER SHIPS                   AI SHIPS'
         s += '\n\n' + '           ' + self.dataPSL[0][5] + '    <   CARRIER   >     ' + self.dataASL[0][5]
         s += '\n' + '           ' + self.dataPSL[1][4] + '    <  BATTLESHIP >     ' + self.dataASL[1][4]
-        s += '\n' + '           ' + self.dataPSL[1][4] + '    <   CRUISER   >     ' + self.dataASL[2][3]
-        s += '\n' + '           ' + self.dataPSL[1][4] + '    <  SUBMARINE  >     ' + self.dataASL[3][3]
-        s += '\n' + '           ' + self.dataPSL[1][4] + '    <  DESTROYER  >     ' + self.dataASL[4][2]
+        s += '\n' + '           ' + self.dataPSL[2][3] + '    <   CRUISER   >     ' + self.dataASL[2][3]
+        s += '\n' + '           ' + self.dataPSL[3][3] + '    <  SUBMARINE  >     ' + self.dataASL[3][3]
+        s += '\n' + '           ' + self.dataPSL[4][2] + '    <  DESTROYER  >     ' + self.dataASL[4][2]
 
         return s       # Return the Board
 
@@ -157,8 +162,15 @@ class Board:
             s += '\n'
         s += ' '
         s += (self.width +2) * black +  "   " + (self.width +2) * black # Bottom of the board
+
+        s += '\n\n' + '       PLAYER SHIPS                   AI SHIPS'
+        s += '\n\n' + '           ' + self.dataPSL[0][5] + '    <   CARRIER   >     ' + self.dataASL[0][5]
+        s += '\n' + '           ' + self.dataPSL[1][4] + '    <  BATTLESHIP >     ' + self.dataASL[1][4]
+        s += '\n' + '           ' + self.dataPSL[1][4] + '    <   CRUISER   >     ' + self.dataASL[2][3]
+        s += '\n' + '           ' + self.dataPSL[1][4] + '    <  SUBMARINE  >     ' + self.dataASL[3][3]
+        s += '\n' + '           ' + self.dataPSL[1][4] + '    <  DESTROYER  >     ' + self.dataASL[4][2]
         
-        print(s)       # Return the Board
+        print(s)
 
     def clearBoard(self, p):
             if p == 'player':
@@ -175,7 +187,7 @@ class Board:
         l, the length of the ship in question (>=1)
         ori, either 'up' 'down' 'left' 'right'
         p, the player whose turn it is"""
-        if not( 0 <= row and row <= self.height) or not( 0 <= col and col <= self.width):   #check to make sure that the row and col are in the given range of self board
+        if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):   #check to make sure that the row and col are in the given range of self board
             print('something went wrong, coords not in range')
             return False
         if ship == 'carrier':
@@ -444,7 +456,7 @@ class Board:
 
     def validTarget(self, col, row, p):
         """Determines whether a selected target is valid, given a converted col, row, and p's turn"""
-        if not( 0 <= row and row <= self.height) or not( 0 <= col and col <= self.width):   #check to make sure that the row and col are in the given range of self board
+        if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):   #check to make sure that the row and col are in the given range of self board
             return False
         if p == 'ai':#   if ai's turn, check ai target board
             if self.dataAT[row][col] != weird:
@@ -477,6 +489,29 @@ class Board:
                 print("Player's Miss!")
                 self.dataPT[row][col] = blue
     
+    def shotPVP(self, col, row, p):
+        """
+        This function will check whether the given point is a 'hit', FOR PLAYER V PLAYER MODE
+        'miss', or 'False' (meaning the position is not valid). A
+        position is not valid if it is out of bounds, or has been already hit.
+        """
+        if p == 'ai':#   If Ai's turn
+            if self.dataPS[row][col] == black:# check to see what the ai is hitting on the players board
+                print("Player 2 Hit!")
+                self.dataPS[row][col] = red
+                self.dataAT[row][col] = red
+            if self.dataPS[row][col] == blue:
+                print("Player 2 Miss!")
+                self.dataAT[row][col] = blue
+        if p == 'player':#   If Players turn
+            if self.dataAS[row][col] == black:# check to see what the player is hitting on the AI's board
+                print("Player 1 Hit!")
+                self.dataPT[row][col] = red
+                self.dataAS[row][col] = red
+            if self.dataAS[row][col] == blue:
+                print("Player 1 Miss!")
+                self.dataPT[row][col] = blue
+
     def randomShot(self, p):
         row = random.randint(0,9)
         col = random.randint(0,9)
@@ -521,10 +556,7 @@ class Board:
                     pass
                 else:
                     x += [col, row]
-        self.dataATC = x
-    
-    
-        
+        self.dataATC = x 
 
     def isClear(self):
         """checks whether a gameboard is clear"""
@@ -545,17 +577,16 @@ class Board:
     def carrierSunk(self, p):  # Example FN, can be used to write the next four. Then afterwards, we can write a winsFor which checks all the ai or player ships depending on input p. This will be the win condition that ends the game.
         """Checks the locations of the carrier in p player's board, and sticks sunk into the location list if sunk."""
         count = 0
-        print("this function is being run")
         if p == 'player':                          
             if self.dataPSL[0][5] == 'sunk':
-                True
+                return True
             
             for x in range(5):
                 if self.dataPS[self.dataPSL[0][x][0]][self.dataPSL[0][x][1]] == red:
                     count += 1
                 if count == 5:
                     self.dataPSL[0][5] = 'sunk'
-                    print ("YOUR CARRIER HAS SUNK")
+                    print ("PLAYER 1 CARRIER HAS SUNK")
                     return True
             else:
                 return False
@@ -583,7 +614,7 @@ class Board:
                     count += 1
                 if count == 4:
                     self.dataPSL[1][4] = 'sunk'
-                    print('YOUR BATTLESHIP HAS SUNK')
+                    print('PLAYER 1 BATTLESHIP HAS SUNK')
                     return True
             else:
                 return False
@@ -611,7 +642,7 @@ class Board:
                     count += 1
                 if count == 3:
                     self.dataPSL[2][3] = 'sunk'
-                    print('YOUR CRUISER HAS SUNK')
+                    print('PLAYER 1 CRUISER HAS SUNK')
                     return True
             else:
                 return False
@@ -639,7 +670,7 @@ class Board:
                     count += 1
                 if count == 3:
                     self.dataPSL[3][3] = 'sunk'
-                    print('YOUR SUBMARINE HAS SUNK')
+                    print('PLAYER 1 SUBMARINE HAS SUNK')
                     return True
             
             else:
@@ -669,7 +700,7 @@ class Board:
                     count += 1
             if count == 2:
                 self.dataPSL[4][2] = 'sunk'
-                print('YOUR DESTROYER HAS SUNK')
+                print('PLAYER 1 DESTROYER HAS SUNK')
                 return True
             else:
                 return False
@@ -687,7 +718,9 @@ class Board:
                     return True
             else:
                 return False      
+    
     #def shipsSunk(self, p): #This function will basically run through all of the functions above and declare whenever a new ship has been destroyed
+    
     def allSunk(self, p):
         """
         This runs all of the above functions, and if they are all true it returns true and prints the end of the game.
@@ -745,6 +778,7 @@ class Board:
         ori = random.choice(correspondingOri[-1])   #Picks a random valid direction from the most recent correspondingOrientation
         col = groupHits[-1][0]
         row = groupHits[-1][1]  #sets coords of correspondingOrientation Shot
+        
         if ori == "U":
             #Performing the shot
             if self.dataPS[row-1][col] == black:# checks one above if it hits 
@@ -752,14 +786,17 @@ class Board:
                 self.dataPS[row-1][col] = red
                 self.dataAT[row-1][col] = red #changes data state on both boards to 'hit'
                 direction = 'U'               #locks direction to 'U' aka Up
+                self.dataPrevShot[3] = 'U'
                 groupHits += [[col,row-1]]               # Adds a new coordinate to groupHit of type list, which allows it to add a new list of coords within the list
                 
                 if orstateDestroyer == False and self.destroyerSunk('player') == True: #if the original state of the destroyer was false, and after the move the destroyer sunk, we want to add this to the summation of sunk ships, our 5th data variable, AKA sunk length
                     sunkLength += 2
                 if sunkLength == len(groupHits):
                     state = 0
+                    self.dataPrevShot[0] = 0
                 if len(groupHits)-sunkLength > 0:
                     state = 2
+                    self.dataPrevShot[0] = 2
 
                     
             if self.dataPS[row-1][col] == blue:    
@@ -772,15 +809,18 @@ class Board:
                 print("AI's Hit!")
                 self.dataPS[row+1][col] = red
                 self.dataAT[row+1][col] = red #changes data state on both boards to 'hit'
-                direction = 'U'               #locks direction to 'D' aka Down
+                direction = 'D'               #locks direction to 'D' aka Down
+                self.dataPrevShot[3] = 'D'
                 groupHits += [[col,row+1]]               # Adds a new coordinate to groupHit of type list, which allows it to add a new list of coords within the list
                 
                 if orstateDestroyer == False and self.destroyerSunk('player') == True: #if the original state of the destroyer was false, and after the move the destroyer sunk, we want to add this to the summation of sunk ships, our 5th data variable, AKA sunk length
                     sunkLength += 2
                 if sunkLength == len(groupHits):
                     state = 0
+                    self.dataPrevShot[0] = 0
                 if len(groupHits)-sunkLength > 0:
                     state = 2
+                    self.dataPrevShot[0] = 2
 
                     
             if self.dataPS[row+1][col] == blue:    
@@ -793,16 +833,18 @@ class Board:
                 print("AI's Hit!")
                 self.dataPS[row][col-1] = red
                 self.dataAT[row][col-1] = red #changes data state on both boards to 'hit'
-                direction = 'U'               #locks direction to 'L' aka Left
+                direction = 'L'               #locks direction to 'L' aka Left
+                self.dataPrevShot[3] = 'L'
                 groupHits += [[col-1,row]]               # Adds a new coordinate to groupHit of type list, which allows it to add a new list of coords within the list
                 
                 if orstateDestroyer == False and self.destroyerSunk('player') == True: #if the original state of the destroyer was false, and after the move the destroyer sunk, we want to add this to the summation of sunk ships, our 5th data variable, AKA sunk length
                     sunkLength += 2
                 if sunkLength == len(groupHits):
                     state = 0
+                    self.dataPrevShot[0] = 0
                 if len(groupHits)-sunkLength > 0:
                     state = 2
-
+                    self.dataPrevShot[0] = 2
                     
             if self.dataPS[row][col-1] == blue:    
                 print("AI's Miss!")
@@ -814,21 +856,37 @@ class Board:
                 print("AI's Hit!")
                 self.dataPS[row][col+1] = red
                 self.dataAT[row][col+1] = red #changes data state on both boards to 'hit'
-                direction = 'U'               #locks direction to 'R' aka Right
+                direction = 'R'               #locks direction to 'R' aka Right
+                self.dataPrevShot[3] = 'R'
                 groupHits += [[col+1,row]]               # Adds a new coordinate to groupHit of type list, which allows it to add a new list of coords within the list
                 
                 if orstateDestroyer == False and self.destroyerSunk('player') == True: #if the original state of the destroyer was false, and after the move the destroyer sunk, we want to add this to the summation of sunk ships, our 5th data variable, AKA sunk length
                     sunkLength += 2
                 if sunkLength == len(groupHits):
                     state = 0
+                    self.dataPrevShot[0] = 0
                 if len(groupHits)-sunkLength > 0:
                     state = 2
+                    self.dataPrevShot[0] = 2
 
                     
             if self.dataPS[row][col+1] == blue:    
                 print("AI's Miss!")
                 self.dataAT[row][col+1] = blue
             correspondingOri[-1].remove('R') 
+
+    def stateTwo(self):
+        state = self.dataPrevShot[0]
+        groupHits = self.dataPrevShot[1]
+        correspondingOri = self.dataPrevShot[2]
+        direction = self.dataPrevShot[3]
+        sunkLength = self.dataPrevShot[4]
+        orstateDestroyer = copy.deepcopy(self.destroyerSunk('player'))
+
+        if direction == 'U':
+            groupHits[0][0]
+
+
     def aiBrain(self):
                 """
                 Within this function we will determine the next move of the AI, it will cycle between behavorial states.
@@ -850,6 +908,8 @@ class Board:
                     self.randomCheckerShot()
                 if state == 1:
                     self.stateOne()
+                if state == 2:
+                    self.stateTwo()
                         
             
     def hostGame(self):
@@ -1002,45 +1062,383 @@ class Board:
                 let, dig = getcolrow(self)
                 col = int(convertCord(let))
                 row = dig
-                print("col,row are", col, row)
 
-
-                self.carrierSunk('ai')                  #For some reason it takes 1 extra turn for the 'good' 'sunk' board to update
-                self.battleshipSunk('ai')
-                self.cruiserSunk('ai')
-                self.submarineSunk('ai')
-                self.destroyerSunk('ai')
-                
-                if ( 0 <= row and row <= self.height) or not( 0 <= col and col <= self.width):
+                if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):
                     if self.validTarget(col, row, 'player'):
                         self.shot(col, row, 'player')
                         print(self)
                         break
                     else:
                         print("Oh no! Something went wrong... lets try that again...")
+
+                self.carrierSunk('ai')
+                self.battleshipSunk('ai')
+                self.cruiserSunk('ai')
+                self.submarineSunk('ai')
+                self.destroyerSunk('ai')
+
             print("Now, It's AI's turn...")
 
             
-            
+
             #   START OF AI ROUND
 
+
+
+    # Player V Player
+
+
+
+    def hostPlayerGame(self):
+        """ATTEMPTS to host a player vs player game... oh boy"""
+        if self.isClear() == False:
+            return print("Your Board is not clear! Clear it, then you can start a new game.")
+        print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome to Battleship! This is an experimental player vs. player mode, let's see what happens!")
+        print("\nIt is worth noting... in this gamemode, Player 1 may be referred to as 'player' and player 2 as 'ai' (Below Board for instance).\n     Consider this an intentional goofy gag :P\n")
+        print("Player 1's Board will always have a white border, while player 2 will have a black border. You will be required to turn the screen often, so get comfortable!\n\n\n\n")
+        dhso = input("Press [ENTER] to continue...\n")
+        print(self)
+        print("\nWe will begin by placing your ships, Player 1... now would be the time to look away, Player 2!\n")
+        dhso = input("Press [ENTER] to continue...\n")
+        while True:#     Carrier
+            colrow = str(input("Which grid tile would you like to start your aircraft carrier on (length 5)?  Use form A6, G4, etc.  -  "))
+            """For some reason, when you input a random character like @ in the first position it counts it as A"""
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
+            col = int(convertCord(colrow[0]))
+            row = int((colrow[1]))
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori = ori.lower()
+            if self.allowsMove(col, row, 'carrier', ori, 'player'):
+                self.placeShip(col, row, 'carrier', ori, 'player')
+                print("\n\n\n")
+                print(self)
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        while True:#     Battleship
+            colrow = str(input("Which grid tile would you like to start your battleship on (length 4)?  Use form A6, G4, etc.  -  "))
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? up, down, left or right?  -  ")
+            ori = ori.lower()
+            if self.allowsMove(col, row, 'battleship', ori, 'player'):
+                self.placeShip(col, row, 'battleship', ori, 'player')
+                print("\n\n\n")
+                print(self)
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        while True: #Submarine
+            colrow = str(input("Which grid tile would you like to start your submarine on (length 3)?  Use form A6, G4, etc.  -  "))
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori.lower()
+            if self.allowsMove(col, row, 'submarine', ori, 'player'):
+                self.placeShip(col, row, 'submarine', ori, 'player')
+                print("\n\n\n")
+                print(self)
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        while True:#Cruiser
+            colrow = str(input("Which grid tile would you like to start your cruiser on (length 3)?  Use form A6, G4, etc.  -  "))
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori.lower()
+            if self.allowsMove(col, row, 'cruiser', ori, 'player'):
+                self.placeShip(col, row, 'cruiser', ori, 'player')
+                print("\n\n\n")
+                print(self)
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        while True:#Destroyer
+            colrow = str(input("Which grid tile would you like to start your destroyer on (length 2)?  Use form A6, G4, etc.  -  "))
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori.lower()
+            if self.allowsMove(col, row, 'destroyer', ori, 'player'):
+                self.placeShip(col, row, 'destroyer', ori, 'player')
+                print("\n\n\n")
+                print(self)
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nGood Job Player 1! Looks like all your ships are placed! Let's switch over to player 2\n\n")
+        print("Here's where it starts to get experimental! Alright player 1, It's your turn to look away! Call player 2 back so they can place their ships...\n\n")
+        dhso = input("Press [ENTER] to continue...\n")
+        self.aiBoard()
+        print("Here goes player 2!")
+
+        #   PLAYER 2 SHIP PLACEMENT
+
+        while True:#     Carrier
+            colrow = str(input("Which grid tile would you like to start your aircraft carrier on (length 5)?  Use form A6, G4, etc.  -  "))
+            """For some reason, when you input a random character like @ in the first position it counts it as A"""
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
+            col = int(convertCord(colrow[0]))
+            row = int((colrow[1]))
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori = ori.lower()
+            if self.allowsMove(col, row, 'carrier', ori, 'ai'):
+                self.placeShip(col, row, 'carrier', ori, 'ai')
+                print("\n\n\n")
+                self.aiBoard()
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        while True:#     Battleship
+            colrow = str(input("Which grid tile would you like to start your battleship on (length 4)?  Use form A6, G4, etc.  -  "))
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? up, down, left or right?  -  ")
+            ori = ori.lower()
+            if self.allowsMove(col, row, 'battleship', ori, 'ai'):
+                self.placeShip(col, row, 'battleship', ori, 'ai')
+                print("\n\n\n")
+                self.aiBoard()
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        while True: #Submarine
+            colrow = str(input("Which grid tile would you like to start your submarine on (length 3)?  Use form A6, G4, etc.  -  "))
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori.lower()
+            if self.allowsMove(col, row, 'submarine', ori, 'ai'):
+                self.placeShip(col, row, 'submarine', ori, 'ai')
+                print("\n\n\n")
+                self.aiBoard()
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        while True:#Cruiser
+            colrow = str(input("Which grid tile would you like to start your cruiser on (length 3)?  Use form A6, G4, etc.  -  "))
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori.lower()
+            if self.allowsMove(col, row, 'cruiser', ori, 'ai'):
+                self.placeShip(col, row, 'cruiser', ori, 'ai')
+                print("\n\n\n")
+                self.aiBoard()
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        while True:#Destroyer
+            colrow = str(input("Which grid tile would you like to start your destroyer on (length 2)?  Use form A6, G4, etc.  -  "))
+            try:                   #Checks whether the second value of the string that the player inputs is convertable to an integer, if invalid tells to re-enter
+                int(colrow[1])
+            except ValueError:
+                print("Make sure you input proper coordinates!")
+                continue
+            try:                   #Checks whether the first value of the string is a letter, if it is and returns an error it passes, if valid tells to re-enter
+                int(colrow[0])
+            except ValueError:
+                pass
+            else:
+                print("Make sure you input proper coordinates!")
+                continue
+            col = int(convertCord(colrow[0]))
+            row = int(colrow[1])
+            ori = input("How would you like to place it? Up, Down, Left or Right?  -  ")
+            ori.lower()
+            if self.allowsMove(col, row, 'destroyer', ori, 'ai'):
+                self.placeShip(col, row, 'destroyer', ori, 'ai')
+                print("\n\n\n")
+                self.aiBoard()
+                break
+            else:
+                print("Oh no! Something went wrong... Let's try that again")
+        print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCongratulations Players! You have placed your boards! They both look like this:")
+        time.sleep(3)
+        print('\n\n\nHAHAHA just kidding. But seriously, its about to be Player 1\'s turn, so uh idk maybe look away Player 2? Lmao\n\n')
+        dhso = input("Press [ENTER] to continue...\n")
+        print(self)
+        # START OF GAMEPLAY - PLAYER V PLAYER
+
+        while True:#   Player 1 Turn
+            print("Player 1, it's your turn! Where would you like to target your opponent's board?")
+            let, dig = getcolrow(self)
+            col = int(convertCord(let))
+            row = dig
+
+                # Deleted a print here... didn't make much sense, the player wouldn't have understood col,row, that would be 0,0 not A,0
+                #BTW had to fix all of the not(0<=row<=self.width ETC.) throughout the code... shortened and had to add the -1
+
+            self.shotPVP(col, row, 'player')
             
+            self.carrierSunk('ai')
+            self.battleshipSunk('ai')
+            self.cruiserSunk('ai')
+            self.submarineSunk('ai')
+            self.destroyerSunk('ai')
 
+            print("Note – Refer to table below boards for most accurate sunk declarations :)\n")
+            print(self)
 
-#  Next Steps...
-"""In no particular order:
-    build the end functions that check for a sunk board
-    building off that, the functions have to print player's Ship Sunk when a given ship sinks
-    AI targeting system
-    AI ship placement system
-    
-    Right now, the player placement is fully functional, and basically so is player targeting. Just need AI time."""
+            if self.carrierSunk('ai') and self.battleshipSunk('ai') and self.cruiserSunk('ai') and self.submarineSunk('ai') and self.destroyerSunk('ai'):
+                print("GAME OVER, Player 2 Lost! Great Job Player 1!")
+                playerWinCount += 1
+                print("Scoreboard: ", playerWinCount, "wins for Player 1, ", aiWinCount, "wins for Player 2!")
+                break
 
-#in the creation of the AI, you will use the targets that have been placed to create a heatmap, however there are certain cases where you know
-# for a fact that there must be a ship in the next location, and if so it can spend the rest of its moves trying to get to the other ship faster
-# I wonder if this would increase the speed.
+            dhso = input("Player 1, press [ENTER] to hide your board and end your turn! ...\n")
+            print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+            dhso = input("Player 2, press [ENTER] to start your turn!")
+
+            #   START OF PLAYER 2 ROUND
+
+            self.aiBoard()
+
+            print("Player 2, it's your turn! Where would you like to target your opponent's board?")
+            let, dig = getcolrow(self)
+            col = int(convertCord(let))
+            row = dig
+
+            self.shotPVP(col, row, 'ai')
+            
+            self.carrierSunk('player')
+            self.battleshipSunk('player')
+            self.cruiserSunk('player')
+            self.submarineSunk('player')
+            self.destroyerSunk('player')
+
+            print("Note – YOUR SHIPS refers to player 1, ENEMY SHIPS refers to  :)\n")
+            self.aiBoard()
+
+            if self.carrierSunk('player') and self.battleshipSunk('player') and self.cruiserSunk('player') and self.submarineSunk('player') and self.destroyerSunk('player'):
+                print("GAME OVER, Player 1 Lost! Great Job Player 2!")
+                aiWinCount += 1
+                print("Scoreboard: ", playerWinCount, "wins for Player 1, ", aiWinCount, "wins for Player 2!")
+                break
+
+            dhso = input("Player 2, press [ENTER] to hide your board and end your turn! ...\n")
+            print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+            dhso = input("Player 1, press [ENTER] to start your turn!")
+            print(self)
+            
+print("\nScoreboard will display when you begin to play a gamemode!  ** Run d = Board(10,10) after a match for new board! **")
+print("\nYou can use d.hostGame() for our tailored Human versus AI experience! Good Luck!\nYou can try d.hostPlayerGame() for a classic player versus player experience! Grab a friend!\nAnd if you're lucky, we will implement a d.hostAIMatchup() soon!")
 
 d = Board(10,10)
 
-"""we meed to build functiond that need to check weather the individual ships are sunk.
- Then a larger helper that is all ships are sunk returm true fals... run return string in hostgame... """
+#       JACKSON PROGRESS 12/11 BELOW
+
+"""Where did I leave off? Lots of progress... Fixed a lot of errors throughout the code, so unfortunately we might have to copy it through the entire thing
+or else Ket will be copying changed for quite some time. I have written this update multiple times before realizing how much easier it will be for me to
+finish the bit of code I was working on now. Think I got it. **One big error is an IndexError that breaks the funciton as I try to place ships, super inconvenient.
+Other than that I keep getting such silly errors, diagnosing them for like 15 mins, then realizing that we fucking boofed a hunk of code. We need to play-test WAY
+more often!! Would be much easier to diagnose these errors!!
+"""
+
