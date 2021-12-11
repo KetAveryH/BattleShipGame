@@ -1,4 +1,5 @@
 import random
+import copy
 
 """
 To begin we will want to start with the creation of an 8x8 grid
@@ -10,7 +11,7 @@ weird = '\U0001F533'
 black = '\U00002B1B'
 
 
-# Create a converter, so we can take in A4 or C2, then actually use 04 or 32
+# Create a converter, so we can take in A4 or C2, then actually use 04 or 22 (index starts at 0)
 letcol = {'a':0,
         'b':1,
         'c':2,
@@ -83,6 +84,8 @@ class Board:
         self.dataAT = [[weird]*width for row in range(height)] #AI target
         self.dataPSL = [[[],[],[],[],[],'good'],[[],[],[],[],'good'],[[],[],[],'good'],[[],[],[],'good'],[[],[],'good']]
         self.dataASL = [[[],[],[],[],[],'good'],[[],[],[],[],'good'],[[],[],[],'good'],[[],[],[],'good'],[[],[],'good']]
+        self.dataATC = []
+        self.dataPrevShot = [0,[],[],[],0]
 
     def __repr__(self):
         """This method returns a string representation for an object of type Board."""
@@ -442,7 +445,6 @@ class Board:
     def validTarget(self, col, row, p):
         """Determines whether a selected target is valid, given a converted col, row, and p's turn"""
         if not( 0 <= row and row <= self.height) or not( 0 <= col and col <= self.width):   #check to make sure that the row and col are in the given range of self board
-            print('something went wrong, coords not in range')
             return False
         if p == 'ai':#   if ai's turn, check ai target board
             if self.dataAT[row][col] != weird:
@@ -478,7 +480,9 @@ class Board:
     def randomShot(self, p):
         row = random.randint(0,9)
         col = random.randint(0,9)
+        
         if p == 'ai':#   If Ai's turn
+            self.dataPrevShot = [col, row]
             if self.dataPS[row][col] == black:# check to see what the ai is hitting on the players board
                 print("AI's Hit!")
                 self.dataPS[row][col] = red
@@ -494,6 +498,33 @@ class Board:
             if self.dataAS[row][col] == blue:
                 print("Player's Miss!")
                 self.dataPT[row][col] = blue
+
+    def hitStrat(self, p):
+       prevs = self.dataPrevShot
+       col = prevs[0]
+       row = prevs[1]
+       up = prevs[row-1][col]
+       down = prevs[row+1][col]
+       
+           
+
+       print(row, col)
+       print(up)
+       print(down)
+
+    def randomCheckerCreation(self):
+        """Helper which fills self.dataATC with the proper checker pattern"""
+        x = []
+        for col in range(self.width):
+            for row in range(self.height):
+                if col%2 == row %2:
+                    pass
+                else:
+                    x += [col, row]
+        self.dataATC = x
+    
+    
+        
 
     def isClear(self):
         """checks whether a gameboard is clear"""
@@ -675,6 +706,82 @@ class Board:
             else:
                 return False
             
+    def randomCheckerShot(self):
+        """Function which lets ai choose a random shot out of a checkerboard"""
+        if not(self.dataATC):#  if list is empty, create it using above helper fn
+            self.rCheckerCreation()
+        shot = random.choice(self.dataATC)#  Main point, return a random choice not done yet
+        col = shot[0]
+        row = shot[1]
+        if self.dataPS[row][col] == black:# Check for shot being hit
+            print("AI's Hit!")
+            self.dataPS[row][col] = red # changes players board
+            self.dataAT[row][col] = red # changes ai target board
+            self.dataATC.remove(shot) # removes target from checkered possible shots
+            self.dataPrevShot[0] = 1 # Changes state to 1
+            self.dataPrevShot[1] = [[col,row]]#  adds a new hit coord to groupHit      groupHit and correspondingOri are created at the same time, so the index of both lists correspond with one another. Acts like dictionary with index of list being the key 
+            self.dataPrevShot[2] += [[]]#    adds a new list to correspondingOri    
+            if self.validTarget(col, row-1, 'ai'):  # This series of code checks whether a certain direction if valid and places it within correspondingOri
+                self.dataPrevShot[2][-1] += 'U'
+            if self.validTarget(col+1, row, 'ai'):
+                self.dataPrevShot[2][-1] += 'R'
+            if self.validTarget(col, row+1, 'ai'):
+                self.dataPrevShot[2][-1] += 'D'
+            if self.validTarget(col-1, row, 'ai'):
+                self.dataPrevShot[2][-1] += 'L'
+        if self.dataPS[row][col] == blue:       #if miss it simply removes a coordinate form the list of possible checkered shots
+            print("AI's Miss!")
+            self.dataAT[row][col] = blue
+            self.dataATC.remove(shot)
+
+    def stateOne(self):   #Function is used once the first shot has been identified
+        state = self.dataPrevShot[0]
+        groupHits = self.dataPrevShot[1]
+        correspondingOri = self.dataPrevShot[2]
+        direction = self.dataPrevShot[3]
+        sunkLength = self.dataPrevShot[4]
+        orstateDestroyer = copy.deepcopy(d.destroyerSunk('player'))
+
+        ori = random.choice(correspondingOri[-1])   #Picks a random valid direction from the most recent correspondingOrientation
+        col = groupHits[-1][0]
+        row = groupHits[-1][1]  #sets coords of correspondingOrientation Shot
+        if ori == "U":
+            #Performing the shot
+            if self.dataPS[row-1][col] == black:# checks one above if it hits 
+                print("AI's Hit!")
+                self.dataPS[row-1][col] = red
+                self.dataAT[row-1][col] = red #changes data state on both boards to 'hit'
+                direction = 'U'               #locks direction to 'U' aka Up
+                groupHits += [[col,row-1]]               # Adds a new coordinate to groupHit of type list, which allows it to add a new list of coords within the list
+                if orstateDestroyer  
+            if self.dataPS[row-1][col] == blue:    
+                print("AI's Miss!")
+                self.dataAT[row][col] = blue
+            correspondingOri[-1].remove('U') 
+        
+
+    def aiBrain(self):
+                """
+                Within this function we will determine the next move of the AI, it will cycle between behavorial states.
+                We will store all the data that this function uses in 'self.dataPrevShot'
+                state 0: We have yet to hit something
+                state 1: Our first hit
+                state 2: Direction Found
+                state 3: Direction track ended, move in reverse
+                state 4: Multiple ships established in state 3.
+                self.dataPrevShot = [0,[],[[[coord],[dir,dir,dir,dir]]],[],0]
+                """
+                state = self.dataPrevShot[0]
+                groupHits = self.dataPrevShot[1]
+                correspondingOri = self.dataPrevShot[2]
+                direction = self.dataPrevShot[3]
+                sunkLength = self.dataPrevShot[4]
+
+                if state == 0:
+                    self.randomCheckerShot()
+                if state == 1:
+                    self.stateOne()
+                        
             
     def hostGame(self):
         """Function which builds the game, playing it until one player has sunk all of their opponents ships. Player vs. AI"""
@@ -818,7 +925,7 @@ class Board:
 
         #   END OF AI SHIP PLACEMENT, START OF PLAYER ROUND 1!
 
-        #   Start of a round
+        #   Start of a COMPLETE round
 
         while True:
             print("Player, it's your turn! Where would you like to target your opponent's board?")
@@ -843,7 +950,12 @@ class Board:
                     else:
                         print("Oh no! Something went wrong... lets try that again...")
             print("Now, It's AI's turn...")
-            d.randomShot('ai')
+
+            
+            
+            #   START OF AI ROUND
+
+            
 
 
 #  Next Steps...
@@ -860,30 +972,6 @@ class Board:
 # I wonder if this would increase the speed.
 
 d = Board(10,10)
-
-# d.placeShip(4,4,'destroyer','right','player')
-# d.shot(4,4,'ai')
-# d.shot(5,4,'ai')
-# d.placeShip(4,5,'battleship','right','player')
-# d.shot(4,5,'ai')
-# d.shot(5,5,'ai')
-# d.shot(6,5,'ai')
-# d.shot(7,5,'ai')
-# d.placeShip(4,6,'cruiser','right','player')
-# d.shot(4,6, 'ai')
-# d.shot(5,6, 'ai')
-# d.shot(6,6, 'ai')
-# d.placeShip(4,7,'submarine','right','player')
-# d.shot(4,7, 'ai')
-# d.shot(5,7, 'ai')
-# d.shot(6,7, 'ai')
-# d.placeShip(4,8,'carrier','right','player')
-# d.shot(4,8, 'ai')
-# d.shot(5,8, 'ai')
-# d.shot(6,8, 'ai')
-# d.shot(7,8, 'ai')
-# d.shot(8,8, 'ai')
-
 
 """we meed to build functiond that need to check weather the individual ships are sunk.
  Then a larger helper that is all ships are sunk returm true fals... run return string in hostgame... """
