@@ -127,7 +127,7 @@ class Board:
         self.dataPSL = [[[],[],[],[],[],'good'],[[],[],[],[],'good'],[[],[],[],'good'],[[],[],[],'good'],[[],[],'good']]
         self.dataASL = [[[],[],[],[],[],'good'],[[],[],[],[],'good'],[[],[],[],'good'],[[],[],[],'good'],[[],[],'good']]
         self.dataATC = []
-        self.dataPrevShot = [0,[],[],[],0,[],True]
+        self.dataPrevShot = [0,[],[],[],0,[],True, []] #7 is for perimeter targets
         self.scoreboard = [0,0]#  Player1/Player wins, vs AI/Player 2 wins
 
     def __repr__(self):
@@ -321,6 +321,18 @@ class Board:
             #print("you did something wrong, no ori assigned")
             return False
 
+    def validTarget(self, col, row, p):
+        """KEY FUNCTION:  Determines whether a selected target is valid, given a converted col, row, and p's turn"""
+        if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):   #check to make sure that the row and col are in the given range of self board
+            return False
+        if p == 'ai':#   if ai's turn, check ai target board
+            if self.dataAT[row][col] != weird:
+                return False
+        if p == 'player':#    If players turn, check players targer board
+            if self.dataPT[row][col] != weird:
+                return False
+        return True
+
     def placeShip(self, col, row, ship, ori, p):
         """Taking in a valid col, row, length and orientation, will actually place the described ship on p's board"""
         if ship == 'carrier':
@@ -433,27 +445,38 @@ class Board:
                 if horScore >= 1:
                     return False
 
-    def shipPerimeter(self, ship, p):
-        """RETIRED FUNCTION:  
-        For this function we will input the ship and player, and it will return a list of points around the ship
-        The way we do this is we just add 1 and subtract 1 from each column value if vertical, or we add 1 and 
-        subtract 1 from each row if horizontal. 
+    def possibilityPerimeter(self, coords):
         """
-        carrierLoc = self.dataPSL[0][0:5]
-        battleshipLoc = self.dataPSL[1][0:4]
-        cruiserLoc = self.dataPSL[2][0:3]
-        submarineLoc = self.dataPSL[3][0:3]
-        destroyerLoc = self.dataPSL[4][0:2]
-
-        #THIS STILL HAS TO BE CREATED
-
-        if self.isVertical(ship, p) == True:
-            #code that draws perimeter of a vertical ship
-            for x in range():
-                print()
-        else:
-            print()
-            # code that draws perimeter of a horizontal ship
+        THIS IS AN AI FUNCTION
+        This function will take in a list of coordinates and output a list of valid coordinates
+        that surround this list. It will not return it but make changes to data that is stored.
+        It will simply return points that are above below and to the right of the given coordinates, and
+        only return the coordinate if it is data point "weird". 
+        The plan is to sum all of the individual possible perimeters of these individual points,
+        then to subtract the points themselves from this list of possible perimeter coordinates
+        input: [[5,5],[5,6],[5,7]]
+        output: []
+        """
+        #self.dataAt[row, col]
+        perimeter = []
+        for i in range(len(coords)):
+            if self.validTarget(coords[i][0]+1, coords[i][1], 'ai') == True: #checks if the given value DOWN 1 row is within range to avoid errors
+                if self.dataAT[coords[i][0]+1][coords[i][1]] == weird:   #checks whether the value 1 row BELOW is valid
+                    self.dataPrevShot[7] += [[coords[i][0]+1, coords[i][1]]] #adds to perimeter targets
+            if self.validTarget(coords[i][0]-1, coords[i][1], 'ai') == True: #checks if the given value UP 1 row is within range to avoid errors
+                if self.dataAT[coords[i][0]-1][coords[i][1]] == weird:   #checks whether the value 1 row BELOW is valid
+                    self.dataPrevShot[7] += [[coords[i][0]-1, coords[i][1]]]
+            if self.validTarget(coords[i][0], coords[i][1]+1, 'ai') == True: #checks if the given value 1 column RIGHT is within range to avoid errors
+                if self.dataAT[coords[i][0]][coords[i][1]+1] == weird:   #checks whether the value 1 colimn RIGHT is valid
+                    self.dataPrevShot[7] += [[coords[i][0], coords[i][1]+1]]
+            if self.validTarget(coords[i][0], coords[i][1]-1, 'ai') == True: #checks if the given value 1 column RIGHT is within range to avoid errors
+                if self.dataAT[coords[i][0]][coords[i][1]-1] == weird:   #checks whether the value 1 colimn RIGHT is valid
+                    self.dataPrevShot[7] += [[coords[i][0], coords[i][1]-1]]
+            
+        for i in range(len(coords)):
+            d.dataPrevShot[7].remove(coords[i])
+        
+    
         
     def randomPlacement(self, p):
         """
@@ -492,18 +515,6 @@ class Board:
                 x += 1
                 shipList.remove(randShip)
         return d
-
-    def validTarget(self, col, row, p):
-        """KEY FUNCTION:  Determines whether a selected target is valid, given a converted col, row, and p's turn"""
-        if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):   #check to make sure that the row and col are in the given range of self board
-            return False
-        if p == 'ai':#   if ai's turn, check ai target board
-            if self.dataAT[row][col] != weird:
-                return False
-        if p == 'player':#    If players turn, check players targer board
-            if self.dataPT[row][col] != weird:
-                return False
-        return True
 
     def shot(self, col, row, p):
         """
@@ -1280,6 +1291,16 @@ class Board:
                     state = 0 #Temporary Shortcut Delete when state 4 Exists
                     self.dataPrevShot[0] = 0
                     self.dataPrevShot[6] = True#    Makes state 3 a virgin again (like me)      
+
+    def stateFour(self):
+        """
+        State four will be triggered in the case that you hit along a line of ships, and the total amount of actual hits self.dataPrevShot[1] is not equal to the
+        amount of hits that led to a ship being sunk, sunkShips, [4].0 If this is true and nothing was sunk at all it will first turn the other 
+        direction, and if it hits a blue, it will then enact a guessing protocol around the perimeter of whats remaining.
+        However, if you do sink a ship the program is coded to stop at that point, and remove the most recent hits from it's immediate memory, 
+        which will be stored in self.dataPrevShot[5], "target hits". It will then choose the perimeter of the remaining "target hits". It would be
+        useful to create a perimeter function now. It will define it's true perimeter as what is "weird".
+        """
 
     def aiBrain(self):
                 """
