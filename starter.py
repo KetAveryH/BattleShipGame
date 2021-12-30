@@ -78,12 +78,14 @@ def convertCord(col):
     return False
 
 def revertCord(col):
+    """create a reverter, inverse of convertCord, so that we can take in 02 or 32, the actually print A2 or C2"""
     if col in collet:
         return collet.get(col).upper()
     
     return False
 
 def getcolrow(self):
+    """Smart function which prompts for a board input. This input must be within range of the board, and a valid combo of letter + number, before getcolrow accepts the input"""
     while True:
         colrow = input("Remember to input in the form A7, D4, I3, etc.  -  ")
         if len(colrow) > 2 or len(colrow) < 2:
@@ -169,7 +171,7 @@ class Board:
         return s       # Return the Board
 
     def aiBoard(self):
-        """Allows the ai's board to be displayed at will. Is typically hidden, as in a typical game of battleship"""
+        """Allows the ai's board to be displayed at will. Is typically hidden, as in a typical game of battleship. Adapted to display for AI games and PVP games."""
         alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
         s = ''                          # Define the string to return
         s += "   "                         #Code that labels each column
@@ -209,20 +211,21 @@ class Board:
         print(s)
 
     def clearBoard(self, p):
-            if p == 'player':
-                self.dataPS = [[blue]*self.width for row in range(self.height)]
-                self.dataPT = [[weird]*self.width for row in range(self.height)]
-            if p == 'ai':
-                self.dataAS = [[blue]*self.width for row in range(self.height)]
-                self.dataAT = [[weird]*self.width for row in range(self.height)]
+        """Clears the given boards, although is no longer in use. Will not properly clear boards!!!"""
+        if p == 'player':
+            self.dataPS = [[blue]*self.width for row in range(self.height)]
+            self.dataPT = [[weird]*self.width for row in range(self.height)]
+        if p == 'ai':                                                              #  RETIRED FUNCTION
+            self.dataAS = [[blue]*self.width for row in range(self.height)]
+            self.dataAT = [[weird]*self.width for row in range(self.height)]
 
     def allowsMove(self, col, row, ship, ori, p):
         """Checks whether a ship placement will be allowed. Accepts:
         Col, a number representing a letter where ship starts
-        Row, a number representing how far down to start
-        l, the length of the ship in question (>=1)
-        ori, either 'up' 'down' 'left' 'right'
-        p, the player whose turn it is"""
+        Row, a number representing how the starting row
+        ship, the ship in question to be placed
+        ori, either 'up' 'down' 'left' 'right', the orientation to place the ship starting at col,row
+        p, the player upon whose board to place the ship"""
         if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):   #check to make sure that the row and col are in the given range of self board
             #print('something went wrong, coords not in range')
             return False
@@ -371,7 +374,7 @@ class Board:
                     self.dataASL[r][x] = [row, col+x]
 
     def isVertical(self, ship, p):
-        """Checks whether a given ship for a given p player is orientated vertically or horizontally. True if vertical, false if otherwise."""
+        """RETIRED FUNCTION:   Checks whether a given ship for a given p player is orientated vertically or horizontally. True if vertical, false if otherwise."""
         horScore = 0
         verScore = 0 
         carrierLoc = self.dataPSL[0][0:5]
@@ -431,7 +434,7 @@ class Board:
                     return False
 
     def shipPerimeter(self, ship, p):
-        """
+        """RETIRED FUNCTION:  
         For this function we will input the ship and player, and it will return a list of points around the ship
         The way we do this is we just add 1 and subtract 1 from each column value if vertical, or we add 1 and 
         subtract 1 from each row if horizontal. 
@@ -454,7 +457,7 @@ class Board:
         
     def randomPlacement(self, p):
         """
-        This function will continuosly generate new coordinates and orientations until all ships are placed
+        This function will continuosly generate new coordinates and orientations until all ships are placed for a given p player or ai
         """
         x=0
         shipList = ['carrier', 'battleship', 'cruiser', 'submarine', 'destroyer']
@@ -472,8 +475,8 @@ class Board:
         return d
 
     def stratRandomPlacement(self, p): #in order to make this function, it would be way easier to make another function that defines the area around each ship.
-        """
-        This function will add on to the previous function by adding constraints, boats may never be touching
+        """RETIRED FUNCTION:  
+        This function will add on to randomPlacement() by adding constraints, boats may never be touching
         """
         x=0
         shipList = ['carrier', 'battleship', 'cruiser', 'submarine', 'cruiser']
@@ -491,7 +494,7 @@ class Board:
         return d
 
     def validTarget(self, col, row, p):
-        """Determines whether a selected target is valid, given a converted col, row, and p's turn"""
+        """KEY FUNCTION:  Determines whether a selected target is valid, given a converted col, row, and p's turn"""
         if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):   #check to make sure that the row and col are in the given range of self board
             return False
         if p == 'ai':#   if ai's turn, check ai target board
@@ -504,9 +507,8 @@ class Board:
 
     def shot(self, col, row, p):
         """
-        This function will check whether the given point is a 'hit', 
-        'miss', or 'False' (meaning the position is not valid). A
-        position is not valid if it is out of bounds, or has been already hit.
+        This executor preforms the necessary actions of a given shot, accepting col,row for p player's turn.
+        it will print hit or miss, while changing the necessary grid tiles to red or blue.
         """
         if p == 'ai':#   If Ai's turn
             if self.dataPS[row][col] == black:# check to see what the ai is hitting on the players board
@@ -530,6 +532,7 @@ class Board:
         This function will check whether the given point is a 'hit', FOR PLAYER V PLAYER MODE
         'miss', or 'False' (meaning the position is not valid). A
         position is not valid if it is out of bounds, or has been already hit.
+        Specifically for use in PVP, with adjusted messages
         """
         if p == 'ai':#   If Ai's turn
             if self.dataPS[row][col] == black:# check to see what the ai is hitting on the players board
@@ -549,6 +552,7 @@ class Board:
                 self.dataPT[row][col] = blue
 
     def randomShot(self, p):
+        """For use by the dumb AI, shoots a random shot on p player's turn"""
         row = random.randint(0,9)
         col = random.randint(0,9)
         
@@ -570,21 +574,8 @@ class Board:
                 print("Player's Miss!")
                 self.dataPT[row][col] = blue
 
-    def hitStrat(self, p):
-       prevs = self.dataPrevShot
-       col = prevs[0]
-       row = prevs[1]
-       up = prevs[row-1][col]
-       down = prevs[row+1][col]
-       
-           
-
-       print(row, col)
-       print(up)
-       print(down)
-
     def randomCheckerCreation(self):
-        """Helper which fills self.dataATC with the proper checker pattern"""
+        """Helper which fills self.dataATC with the proper checkered pattern when called"""
         x = []
         for col in range(self.width):
             for row in range(self.height):
@@ -595,7 +586,7 @@ class Board:
         self.dataATC = x 
 
     def isClear(self):
-        """checks whether a gameboard is clear"""
+        """checks whether a gameboard is clear, for use in starting a new game"""
         for col in range(self.width):
             for row in range(self.height):
                 if self.dataPS[row][col] != blue:
@@ -611,7 +602,7 @@ class Board:
     #The Below functions return True if the type of ship is sunk and False if they have not sunk
 
     def carrierSunk(self, p):  # Example FN, can be used to write the next four. Then afterwards, we can write a winsFor which checks all the ai or player ships depending on input p. This will be the win condition that ends the game.
-        """Checks the locations of the carrier in p player's board, and sticks sunk into the location list if sunk."""
+        """Checks the locations of the carrier in p player's board, and sticks sunk into the location list if True. Also reports in print form when a ship has been sunk."""
         count = 0
         if p == 'player':                          
             if self.dataPSL[0][5] == 'sunk':
@@ -640,6 +631,8 @@ class Board:
             else:
                 return False
     def battleshipSunk(self, p):
+        """Checks the locations of the battleship in p player's board, and sticks sunk into the location list if True. Also reports in print form when a ship has been sunk."""
+
         count = 0
         if p == 'player':
             if self.dataPSL[1][4] == 'sunk':
@@ -668,6 +661,8 @@ class Board:
             else:
                 return False
     def cruiserSunk(self, p):
+        """Checks the locations of the cruiser in p player's board, and sticks sunk into the location list if True. Also reports in print form when a ship has been sunk."""
+
         count = 0
         if p == 'player':
             if self.dataPSL[2][3] == 'sunk':
@@ -696,6 +691,8 @@ class Board:
             else:
                 return False
     def submarineSunk(self, p):
+        """Checks the locations of the submarine in p player's board, and sticks sunk into the location list if True. Also reports in print form when a ship has been sunk."""
+
         count = 0
         if p == 'player':
             if self.dataPSL[3][3] == 'sunk':
@@ -726,6 +723,8 @@ class Board:
             else:
                 return False
     def destroyerSunk(self, p):
+        """Checks the locations of the destroyer in p player's board, and sticks sunk into the location list if True. Also reports in print form when a ship has been sunk."""
+
         count = 0
         if p == 'player':
             if self.dataPSL[4][2] == 'sunk':
@@ -759,7 +758,7 @@ class Board:
     
     def allSunk(self, p):
         """
-        This runs all of the above functions, and if they are all true it returns true and prints the end of the game.
+        This runs all of the Sunk functions, and if they are all true it returns true to signal game end. Primarily used for AI v AI interaction.
         """
         if p == 'player':
             if self.carrierSunk('player') == True and self.battleshipSunk('player') == True and self.cruiserSunk('player') == True and self.submarineSunk('player') == True and self.destroyerSunk('player') == True:
@@ -776,7 +775,7 @@ class Board:
                 return False
             
     def oriValid(self, col, row):
-        """Helper function to keep Ket's sanity"""
+        """Helper function to keep Ket's sanity. Allowed the AI to assign corresponding remaining orientatins to check for a hit location"""
         self.dataPrevShot[2] += [[]]
         if self.validTarget(col, row-1, 'ai'):  # This series of code checks whether a certain direction if valid and places it within correspondingOri
             self.dataPrevShot[2][-1] += 'U'
@@ -788,7 +787,7 @@ class Board:
             self.dataPrevShot[2][-1] += 'L'
 
     def randomCheckerShot(self):
-        """Function which lets ai choose a random shot out of a checkerboard"""
+        """Function which lets ai execute a random shot out of a checkerboard. REPRESENTS STATE 0 OF OUR AI"""
         if not(self.dataATC):#  if list is empty, create it using above helper fn
             self.randomCheckerCreation()
         shot = random.choice(self.dataATC)#  Main point, return a random choice not done yet
@@ -808,6 +807,7 @@ class Board:
             self.dataATC.remove(shot)
 
     def stateOne(self):   #Function is used once the first shot has been identified
+        """State 1 of the AI brain, executes upon first contact"""
         state = self.dataPrevShot[0]
         groupHits = self.dataPrevShot[1]
         correspondingOri = self.dataPrevShot[2]
@@ -927,8 +927,8 @@ class Board:
             if [row,col+1] in self.dataATC:
                 self.dataATC.remove([row,col+1])
 
-
     def stateTwo(self):
+        """STATE TWO of ai brain function, executes shots once a ship orientation is proposed"""
         state = self.dataPrevShot[0]
         groupHits = self.dataPrevShot[1]
         correspondingOri = self.dataPrevShot[2]
@@ -1091,8 +1091,8 @@ class Board:
             if [row,col+1] in self.dataATC:
                 self.dataATC.remove([row,col+1])
 
-
     def stateThree(self):
+        """STATE THREE of ai brain, executes when state two runs out of hits forward, to run shots backwards from the origin"""
         state = self.dataPrevShot[0]
         groupHits = self.dataPrevShot[1]
         correspondingOri = self.dataPrevShot[2]
@@ -1279,19 +1279,17 @@ class Board:
                     state = 4
                     state = 0 #Temporary Shortcut Delete when state 4 Exists
                     self.dataPrevShot[0] = 0
-                    self.dataPrevShot[6] = True#    Makes state 3 a virgin again (like me)
-
-            
+                    self.dataPrevShot[6] = True#    Makes state 3 a virgin again (like me)      
 
     def aiBrain(self):
                 """
-                Within this function we will determine the next move of the AI, it will cycle between behavorial states.
+                Within this function we will determine the next move of the AI, it will cycle between behavorial states. (Like Picobot!)
                 We will store all the data that this function uses in 'self.dataPrevShot'
-                state 0: We have yet to hit something
-                state 1: Our first hit
-                state 2: Direction Found
-                state 3: Direction track ended, move in reverse
-                state 4: Multiple ships established in state 3.
+                state 0: We have yet to hit something, checkerboard pattern shooting ensues.
+                state 1: Our first hit, we check in a flower around it
+                state 2: Direction Found, continue along this orientation
+                state 3: Direction track ended, move in reverse to try and sink ship.
+                state 4: State 3 established multiple ships in a grouping - currently not implemented, this is advanced.
                 self.dataPrevShot = [0,[],[[coord],[coord]],[dir,dir,dir,dir]]],[],0]
                 """
                 state = self.dataPrevShot[0]
@@ -1308,10 +1306,44 @@ class Board:
                     self.stateTwo()
                 if state == 3:
                     self.stateThree()
-                        
-            
+
+    def ai2BoardAIVAI(self):
+        """Displays the AI board without bottom table of ships sunk. For use in AI v AI games."""
+        alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+        s = ''                          # Define the string to return
+        s += "   "                         #Code that labels each column
+        for col in range(0, self.width):
+            s += " "
+            s += alphabet[col]
+        s += "       "
+        for col in range(0, self.width):
+            s += " "
+            s += alphabet[col]
+        s += '\n'  + ' ' 
+        s += black*(self.width + 2) + "   " + black*(self.width + 2) + "\n"
+        
+        for row in range(0, self.height):
+            s += str(row)
+            s += black
+            for col in range(0, self.width):
+                s += self.dataAS[row][col] + ''
+            s += black
+            s += "  "
+            s += str(row)
+            s += black
+            for col in range(0, self.width):
+                s += self.dataAT[row][col] + ''
+            s += black
+            s += '\n'
+        s += ' '
+        s += (self.width +2) * black +  "   " + (self.width +2) * black # Bottom of the board
+        print(s)
+
+    #   Human V AI
+
+
     def hostGame(self):
-        """Function which builds the game, playing it until one player has sunk all of their opponents ships. Player vs. AI"""
+        """Function which builds and hosts the main human v ai game, playing it until one player has sunk all of their opponents ships."""
         if self.isClear() == False:
             return print("Your Board is not clear! Clear it, then you can start a new game.")
         print("Welcome to Battleship!")
@@ -1459,15 +1491,12 @@ class Board:
                 print("Scoreboard: ", self.scoreboard[0], "wins for Player, ", self.scoreboard[1], "wins for the AI!")
                 break
 
-
-
-
-    # Player V Player
-
+   
+    #   Player V Player
 
 
     def hostPlayerGame(self):
-        """ATTEMPTS to host a player vs player game... oh boy"""
+        """Hosts a player v. player game. More experimental, player tags may display slightly improperly at times, yet is functionally sound!"""
         if self.isClear() == False:
             return print("Your Board is not clear! Clear it, then you can start a new game.")
         print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome to Battleship! This is an experimental player vs. player mode, let's see what happens!")
@@ -1686,7 +1715,7 @@ class Board:
             self.submarineSunk('player')
             self.destroyerSunk('player')
 
-            print("Note – YOUR SHIPS refers to player 1, ENEMY SHIPS refers to  :)\n")
+            print("Note â€“ YOUR SHIPS refers to player 1, ENEMY SHIPS refers to  :)\n")
             self.aiBoard()
 
             if self.carrierSunk('player') and self.battleshipSunk('player') and self.cruiserSunk('player') and self.submarineSunk('player') and self.destroyerSunk('player'):
@@ -1701,45 +1730,11 @@ class Board:
             print(self)
 
 
-    def ai2BoardAIVAI(self):
-        """Allows the ai's board to be displayed at will. Is typically hidden, as in a typical game of battleship"""
-        alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-        s = ''                          # Define the string to return
-        s += "   "                         #Code that labels each column
-        for col in range(0, self.width):
-            s += " "
-            s += alphabet[col]
-        s += "       "
-        for col in range(0, self.width):
-            s += " "
-            s += alphabet[col]
-        s += '\n'  + ' ' 
-        s += black*(self.width + 2) + "   " + black*(self.width + 2) + "\n"
-        
-        for row in range(0, self.height):
-            s += str(row)
-            s += black
-            for col in range(0, self.width):
-                s += self.dataAS[row][col] + ''
-            s += black
-            s += "  "
-            s += str(row)
-            s += black
-            for col in range(0, self.width):
-                s += self.dataAT[row][col] + ''
-            s += black
-            s += '\n'
-        s += ' '
-        s += (self.width +2) * black +  "   " + (self.width +2) * black # Bottom of the board
-        print(s)
-
-    # ai V ai
-
-    # idea... while both allSunks are false run the game... then it will escape when one is true and check with if statements which is true and print the intended message
+    #   AI V AI
 
 
-    def hostGameAIVAI(self):
-        """should host a game of AI vs AI"""
+    def hostAIGame(self):
+        """should host a game of AI vs AI, which runs itself while displaying prettily for the user's experience. Pits aiBrain(), a smart Battlship AI, against a random shooter \"Dumb\" Ai"""
         print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
         print('Welcome to the AI v AI SMASHDOWN')           #introduction
         print('\n\nwhere my computer will butt heads with itself in a thrilling game of battleship madness')
@@ -1798,17 +1793,10 @@ class Board:
         # while d.allSunk('player') == False and d.allSunk('ai') == False:
             
 
-
-
-print("\nScoreboard will display when you begin to play a gamemode!  ** Run d = Board(10,10) after a match for new board! **")
-print("\nYou can use d.hostGame() for our tailored Human versus AI experience! Good Luck!\nYou can try d.hostPlayerGame() for a classic player versus player experience! Grab a friend!\nAnd if you're lucky, we will implement a d.hostGameAIVAI() soon!")
-
-"""note to self when writing hostgame AI... allSunk(p)... this is a wins for fuction. And the aiBrain(self)... takes in self and mchanges the self into s atate where it has made a intellegent move"""
-#0000000000000000000000000000000000000000000000000000000000000000000000
-#0000000000000000000000000000000000000000000000000000000000000000000000
-
- 
-
+print("\nScoreboard will display when you choose a gamemode and complete your first game!  ** Run d = Board(10,10) after a match for new board! **")
+print("\nGamemodes:")
+print("You can use d.hostGame() for our tailored Human versus AI experience! Good Luck!\nYou can try d.hostPlayerGame() for a classic player versus player experience! Grab a friend!\nYou can try d.hostAIGame() to watch a computer v computer showdown!")
+print("\n   Created by: Ket Hollingsworth, Jackson Philion, and Jason Bowman - 2021 CS5 Final Project, \"battleship.py\"")
 
 
 d = Board(10,10)
@@ -1821,4 +1809,3 @@ finish the bit of code I was working on now. Think I got it. **One big error is 
 Other than that I keep getting such silly errors, diagnosing them for like 15 mins, then realizing that we fucking boofed a hunk of code. We need to play-test WAY
 more often!! Would be much easier to diagnose these errors!!
 """
-
