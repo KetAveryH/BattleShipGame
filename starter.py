@@ -127,7 +127,7 @@ class Board:
         self.dataPSL = [[[],[],[],[],[],'good'],[[],[],[],[],'good'],[[],[],[],'good'],[[],[],[],'good'],[[],[],'good']]
         self.dataASL = [[[],[],[],[],[],'good'],[[],[],[],[],'good'],[[],[],[],'good'],[[],[],[],'good'],[[],[],'good']]
         self.dataATC = []
-        self.dataPrevShot = [0,[],[],[],0,[],True, []] #7 is for perimeter targets
+        self.dataPrevShot = [0,[],[],[],0,[],True, [], []] #7 is for perimeter on target board of Ai #8 is for perimeter on target board of player
         self.scoreboard = [0,0]#  Player1/Player wins, vs AI/Player 2 wins
 
     def __repr__(self):
@@ -321,6 +321,174 @@ class Board:
             #print("you did something wrong, no ori assigned")
             return False
 
+    def possibilityPerimeter(self, coords, p):
+        """
+        THIS IS AN AI FUNCTION
+        This function will take in a list of coordinates and output a list of valid coordinates
+        that surround this list. It will not return it but make changes to data that is stored.i
+        It will simply return points that are above below and to the right of the given coordinates, and
+        only return the coordinate if it is data point "weird". 
+        The plan is to sum all of the individual possible perimeters of these individual points,
+        then to subtract the points themselves from this list of possible perimeter coordinates
+        input: [[5,5],[5,6],[5,7]]
+        output: []
+        """
+        #self.dataAt[row, col]
+        perimeter = []
+        if p == 'ai':
+            for i in range(len(coords)):
+                if self.validTarget(coords[i][0]+1, coords[i][1], 'ai') == True: #checks if the given value DOWN 1 row is within range to avoid errors
+                    if self.dataAT[coords[i][0]+1][coords[i][1]] == weird:   #checks whether the value 1 row BELOW is valid
+                        self.dataPrevShot[8] += [[coords[i][0]+1, coords[i][1]]] #adds to perimeter targets
+                if self.validTarget(coords[i][0]-1, coords[i][1], 'ai') == True: #checks if the given value UP 1 row is within range to avoid errors
+                    if self.dataAT[coords[i][0]-1][coords[i][1]] == weird:   #checks whether the value 1 row BELOW is valid
+                        self.dataPrevShot[8] += [[coords[i][0]-1, coords[i][1]]]
+                if self.validTarget(coords[i][0], coords[i][1]+1, 'ai') == True: #checks if the given value 1 column RIGHT is within range to avoid errors
+                    if self.dataAT[coords[i][0]][coords[i][1]+1] == weird:   #checks whether the value 1 colimn RIGHT is valid
+                        self.dataPrevShot[8] += [[coords[i][0], coords[i][1]+1]]
+                if self.validTarget(coords[i][0], coords[i][1]-1, 'ai') == True: #checks if the given value 1 column RIGHT is within range to avoid errors
+                    if self.dataAT[coords[i][0]][coords[i][1]-1] == weird:   #checks whether the value 1 colimn RIGHT is valid
+                        self.dataPrevShot[8] += [[coords[i][0], coords[i][1]-1]]
+        if p == 'player':
+            for i in range(len(coords)):
+                if self.validTarget(coords[i][0]+1, coords[i][1], 'player') == True: #checks if the given value DOWN 1 row is within range to avoid errors
+                    if self.dataPT[coords[i][0]+1][coords[i][1]] == weird:   #checks whether the value 1 row BELOW is valid
+                        self.dataPrevShot[7] += [[coords[i][0]+1, coords[i][1]]] #stores 
+                if self.validTarget(coords[i][0]-1, coords[i][1], 'player') == True: #checks if the given value UP 1 row is within range to avoid errors
+                    if self.dataPT[coords[i][0]-1][coords[i][1]] == weird:   #checks whether the value 1 row BELOW is valid
+                        self.dataPrevShot[7] += [[coords[i][0]-1, coords[i][1]]]
+                if self.validTarget(coords[i][0], coords[i][1]+1, 'player') == True: #checks if the given value 1 column RIGHT is within range to avoid errors
+                    if self.dataPT[coords[i][0]][coords[i][1]+1] == weird:   #checks whether the value 1 colimn RIGHT is valid
+                        self.dataPrevShot[7] += [[coords[i][0], coords[i][1]+1]]
+                if self.validTarget(coords[i][0], coords[i][1]-1, 'player') == True: #checks if the given value 1 column RIGHT is within range to avoid errors
+                    if self.dataPT[coords[i][0]][coords[i][1]-1] == weird:   #checks whether the value 1 colimn RIGHT is valid
+                        self.dataPrevShot[7] += [[coords[i][0], coords[i][1]-1]]
+            
+        # for i in range(len(coords)):
+        #     d.dataPrevShot[7].remove(coords[i]) 
+        
+    def allowsPerimeterMove(self, col, row, ship, ori, p):
+        """Checks whether a ship placement will be allowed, making sure that the selected ship is not within the perimeter of another Accepts:
+        Col, a number representing a letter where ship starts
+        Row, a number representing how the starting row
+        ship, the ship in question to be placed
+        ori, either 'up' 'down' 'left' 'right', the orientation to place the ship starting at col,row
+        p, the player upon whose board to place the ship"""
+        if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):   #check to make sure that the row and col are in the given range of self board
+            #print('something went wrong, coords not in range')
+            return False
+        if ship == 'carrier':
+            l = 5
+        elif ship == 'battleship':
+            l = 4
+        elif ship == 'cruiser':
+            l = 3
+        elif ship == 'submarine':
+            l = 3
+        elif ship == 'destroyer':
+            l = 2
+        else:
+            print('Ship error!')
+            False
+        if p == 'player':
+            if ori == 'up':      #Start for each orientation... 'up' 'down' 'left' 'right'
+                if (row+1)-l < 0:    #check to make sure that the L for each ori isn't too long for the board
+                    #print('you did something wrong, if up')
+                    return False #Here we will reprompt the player in a later function
+                for x in range(l):   #check to make sure that the places we will place the ship are empty
+                    if self.dataPS[row-x][col] !=  blue or [row-x,col] in self.dataPrevShot[7]:
+                        #print("you did something wrong, for loop up")
+                        return False
+                for x in range(l):
+                    d.possibilityPerimeter([[row-x,col]], "player")         #This saves the coordinates of the perimeter that we cannot place ships upon
+                return True      #all good! let the magic happen
+            if ori == 'down':
+                if (row)+l > self.height: 
+                    #print('you did something wrong, if down')
+                    return False #Here we will reprompt the player in a later function
+                for x in range(l):
+                    if self.dataPS[row+x][col] !=  blue or [row+x, col] in self.dataPrevShot[7]:
+                        #print("you did something wrong, for loop down")
+                        return False
+                for x in range(l):
+                    d.possibilityPerimeter([[row+x,col]], "player")
+                return True
+            if ori == 'left':
+                if (col+1)-l < 0:
+                    #print('you did something wrong, if left')
+                    return False
+                for x in range(l):
+                    if self.dataPS[row][col-x] !=  blue or [row, col-x] in self.dataPrevShot[7]:
+                        #print("you did something wrong, for loop left")
+                        return False
+                for x in range(l):
+                    d.possibilityPerimeter([[row, col+x]], "player")
+                return True
+            if ori == 'right':
+                if col+l > self.width:
+                    #print('you did something wrong, if right')
+                    return False
+                for x in range(l):
+                    if self.dataPS[row][col+x] != blue or [row, col+x] in self.dataPrevShot[7]:
+                        #print("you did something wrong, for loop right")
+                        return False
+                for x in range(l):
+                    d.possibilityPerimeter([[row, col+x]], "player")                    
+                return True
+            #print("you did something wrong, no ori assigned")
+            return False
+
+
+        if p == 'ai':
+            if ori == 'up':      #Start for each orientation... 'up' 'down' 'left' 'right'
+                if (row+1)-l < 0:    #check to make sure that the L for each ori isn't too long for the board
+                    #print('you did something wrong, if up')
+                    return False #Here we will reprompt the player in a later function
+                for x in range(l):   #check to make sure that the places we will place the ship are empty
+                    if self.dataPS[row-x][col] !=  blue or [row-x,col] in self.dataPrevShot[8]:
+                        #print("you did something wrong, for loop up")
+                        return False
+                for x in range(l):
+                    d.possibilityPerimeter([[row-x,col]], "ai") 
+                return True      #all good! let the magic happen
+            if ori == 'down':
+                if (row)+l > self.height: 
+                    #print('you did something wrong, if down')
+                    return False #Here we will reprompt the player in a later function
+                for x in range(l):
+                    if self.dataAS[row+x][col] !=  blue or [row+x, col] in self.dataPrevShot[8]:
+                        #print("you did something wrong, for loop down")
+                        return False
+                for x in range(l):
+                    d.possibilityPerimeter([[row+x, col]], "ai")
+                return True
+            if ori == 'left':
+                if (col+1)-l < 0:
+                   #print('you did something wrong, if left')
+                    return False
+                for x in range(l):
+                    if self.dataAS[row][col-x] !=  blue or [row, col-x] in self.dataPrevShot[8]:
+                        #print("you did something wrong, for loop left")
+                        return False
+                for x in range(l):
+                    d.possibilityPerimeter([[row,col-x]],"ai")
+                return True
+            if ori == 'right':
+                if col+l > self.width:
+                    #print('you did something wrong, if right')
+                    return False
+                for x in range(l):
+                    if self.dataAS[row][col+x] != blue or [row, col+x] in self.dataPrevShot[8]:
+                        #print("you did something wrong, for loop right")
+                        return False
+                for x in range(l):
+                    d.possibilityPerimeter([[row, col+x]], "ai")
+                return True
+            
+            #print("you did something wrong, no ori assigned")
+            return False
+
+
     def validTarget(self, col, row, p):
         """KEY FUNCTION:  Determines whether a selected target is valid, given a converted col, row, and p's turn"""
         if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):   #check to make sure that the row and col are in the given range of self board
@@ -444,38 +612,6 @@ class Board:
                     return True
                 if horScore >= 1:
                     return False
-
-    def possibilityPerimeter(self, coords):
-        """
-        THIS IS AN AI FUNCTION
-        This function will take in a list of coordinates and output a list of valid coordinates
-        that surround this list. It will not return it but make changes to data that is stored.
-        It will simply return points that are above below and to the right of the given coordinates, and
-        only return the coordinate if it is data point "weird". 
-        The plan is to sum all of the individual possible perimeters of these individual points,
-        then to subtract the points themselves from this list of possible perimeter coordinates
-        input: [[5,5],[5,6],[5,7]]
-        output: []
-        """
-        #self.dataAt[row, col]
-        perimeter = []
-        for i in range(len(coords)):
-            if self.validTarget(coords[i][0]+1, coords[i][1], 'ai') == True: #checks if the given value DOWN 1 row is within range to avoid errors
-                if self.dataAT[coords[i][0]+1][coords[i][1]] == weird:   #checks whether the value 1 row BELOW is valid
-                    self.dataPrevShot[7] += [[coords[i][0]+1, coords[i][1]]] #adds to perimeter targets
-            if self.validTarget(coords[i][0]-1, coords[i][1], 'ai') == True: #checks if the given value UP 1 row is within range to avoid errors
-                if self.dataAT[coords[i][0]-1][coords[i][1]] == weird:   #checks whether the value 1 row BELOW is valid
-                    self.dataPrevShot[7] += [[coords[i][0]-1, coords[i][1]]]
-            if self.validTarget(coords[i][0], coords[i][1]+1, 'ai') == True: #checks if the given value 1 column RIGHT is within range to avoid errors
-                if self.dataAT[coords[i][0]][coords[i][1]+1] == weird:   #checks whether the value 1 colimn RIGHT is valid
-                    self.dataPrevShot[7] += [[coords[i][0], coords[i][1]+1]]
-            if self.validTarget(coords[i][0], coords[i][1]-1, 'ai') == True: #checks if the given value 1 column RIGHT is within range to avoid errors
-                if self.dataAT[coords[i][0]][coords[i][1]-1] == weird:   #checks whether the value 1 colimn RIGHT is valid
-                    self.dataPrevShot[7] += [[coords[i][0], coords[i][1]-1]]
-            
-        for i in range(len(coords)):
-            d.dataPrevShot[7].remove(coords[i])
-        
     
         
     def randomPlacement(self, p):
@@ -498,10 +634,10 @@ class Board:
         return d
 
     def stratRandomPlacement(self, p): #in order to make this function, it would be way easier to make another function that defines the area around each ship.
-        """RETIRED FUNCTION:  
+        """
         This function will add on to randomPlacement() by adding constraints, boats may never be touching
         """
-        x=0
+        x = 0
         shipList = ['carrier', 'battleship', 'cruiser', 'submarine', 'cruiser']
         oriList = ['right', 'left', 'up', 'down']
         while x < 5:
@@ -509,11 +645,13 @@ class Board:
             randRow = random.randint(0,9)
             randShip = random.choice(shipList)
             randOri = random.choice(oriList)
+            randCoord = (randCol, randRow) 
 
             if self.allowsMove(randCol, randRow, randShip, randOri, p) == True:
-                self.placeShip(randCol, randRow, randShip, randOri, p)
-                x += 1
-                shipList.remove(randShip)
+                if d.allowsPerimeterMove(randCol, randRow, randShip, randOri, p) == True:
+                    self.placeShip(randCol, randRow, randShip, randOri, p)
+                    x += 1
+                    shipList.remove(randShip)
         return d
 
     def shot(self, col, row, p):
