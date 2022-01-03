@@ -1128,6 +1128,8 @@ class Board:
                 self.dataAT[row-1][col] = blue
                 state = 3
                 self.dataPrevShot[0] = 2
+            if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):
+                state = 4
             if sunkLength == len(groupHits):   #MAKE SURE THAT LEN(GROUP HITS) GIVES THE NUMBER OF COORDS[]
                 state = 0
                 self.dataPrevShot[0] = 0
@@ -1164,6 +1166,8 @@ class Board:
                 self.dataAT[row+1][col] = blue
                 state = 3
                 self.dataPrevShot[0] = 2
+            if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):
+                state = 4
             if sunkLength == len(groupHits):   #MAKE SURE THAT LEN(GROUP HITS) GIVES THE NUMBER OF COORDS[]
                 state = 0
                 self.dataPrevShot[0] = 0
@@ -1199,6 +1203,8 @@ class Board:
                 self.dataAT[row][col-1] = blue
                 state = 3
                 self.dataPrevShot[0] = 2
+            if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):
+                state = 4
             if sunkLength == len(groupHits):   #MAKE SURE THAT LEN(GROUP HITS) GIVES THE NUMBER OF COORDS[]
                 state = 0
                 self.dataPrevShot[0] = 0
@@ -1234,6 +1240,8 @@ class Board:
                 self.dataAT[row][col+1] = blue
                 state = 3
                 self.dataPrevShot[0] = 2
+            if not( 0 <= row <= (self.height-1)) or not( 0 <= col <= (self.width-1)):
+                state = 4
             if sunkLength == len(groupHits):   #MAKE SURE THAT LEN(GROUP HITS) GIVES THE NUMBER OF COORDS[]
                 state = 0
                 self.dataPrevShot[0] = 0
@@ -1253,20 +1261,20 @@ class Board:
         orStateBattleship = copy.deepcopy(self.battleshipSunk('player'))
         orStateCarrier = copy.deepcopy(self.carrierSunk('player'))
 
-        if direction == 'U': 
+        if direction == 'U':    #This function actually moves down, since previously the direction was UP
             if self.dataPrevShot[6] == True:                   #This function basically picks opposite of the original direction from the FIRST hit in groupHits. If 
-                col = groupHits[0][0]
+                col = groupHits[0][0]                          # If it's the first time the third state is being used, you will use the first point as a starting point
                 row = groupHits[0][1]
                 if 'D' in correspondingOri[0]:
-                    correspondingOri[0].remove('D') 
+                    correspondingOri[0].remove('D')         #Removes D as a possible orientation for that most recent point 
                 self.dataPrevShot[6] = False
-            else:
+            else:                                           # Once state 3 has been used once before, it will use the most recent point and go from there in the "opposite direction"
                 col = groupHits[-1][0]  
                 row = groupHits[-1][1]
                 if 'D' in correspondingOri[-1]:
                     correspondingOri[-1].remove('D')
 
-            if self.dataPS[row+1][col] == black:# checks one above if it hits 
+            if self.dataPS[row+1][col] == black:# checks one above if it hits                                           UPDATE HEEERREEE
                 print("AI Targeted", revertCord(col), row+1, " and Hit!")
                 self.dataPS[row+1][col] = red
                 self.dataAT[row+1][col] = red #changes data state on both boards to 'hit'
@@ -1292,20 +1300,24 @@ class Board:
                 self.dataAT[row+1][col] = blue   #Moves onto next state
                 if len(groupHits)-sunkLength > 0: #Moves onto the next state        #If total amount of hits is not equal to the amount of hits that resulted in a sink, we move to state 4
                     state = 4
-                    state = 0 #Temporary Shortcut Delete when state 4 Exists
-                    self.dataPrevShot[0] = 0
+                    # state = 0 #Temporary Shortcut Delete when state 4 Exists
+                    self.dataPrevShot[0] = 4
                     self.dataPrevShot[6] = True#    Makes state 3 a virgin again (like me)
 
+            if self.dataPS[row+1][col] == red:
+                state = 4
+                self.dataPrevShot[0] = 4
+                self.dataPrevShot[6] = True
 
 
         if direction == "D":
             if self.dataPrevShot[6] == True:                   #This function basically picks opposite of the original direction from the FIRST hit in groupHits. If 
-                col = groupHits[0][0]
+                col = groupHits[0][0]                          # If it's the first time the third state is being used, you will use the first point as a starting point
                 row = groupHits[0][1]
                 if 'U' in correspondingOri[0]:
                     correspondingOri[0].remove('U') 
                 self.dataPrevShot[6] = False
-            else:
+            else:                                              # Once state 3 has been used once before, it will use the most recent point and go from there in the "opposite direction"
                 col = groupHits[-1][0]
                 row = groupHits[-1][1]
                 if 'U' in correspondingOri[-1]:
@@ -1329,6 +1341,8 @@ class Board:
                     sunkLength += 5
                 if sunkLength == len(groupHits):
                     state = 0
+                    print("Group Hits " + str(groupHits))
+                    print(str(sunkLength))
                     self.dataPrevShot[0] = 0
                     self.dataPrevShot[6] = True#   Makes it a virgin again
 
@@ -1337,9 +1351,14 @@ class Board:
                 self.dataAT[row-1][col] = blue   #Moves onto next state
                 if len(groupHits)-sunkLength > 0: #Moves onto the next state
                     state = 4
-                    state = 0 #Temporary Shortcut Delete when state 4 Exists
-                    self.dataPrevShot[0] = 0
+                    # state = 0 #Temporary Shortcut Delete when state 4 Exists
+                    self.dataPrevShot[0] = 4
                     self.dataPrevShot[6] = True#    Makes state 3 a virgin again (like me)
+            
+            if self.dataPS[row-1][col] == red:
+                state = 4
+                self.dataPrevShot[0] = 4
+                self.dataPrevShot[6] = True
 
 
 
@@ -1382,9 +1401,14 @@ class Board:
                 self.dataAT[row][col+1] = blue   #Moves onto next state
                 if len(groupHits)-sunkLength > 0: #Moves onto the next state
                     state = 4
-                    state = 0 #Temporary Shortcut Delete when state 4 Exists
+                    # state = 0 #Temporary Shortcut Delete when state 4 Exists
                     self.dataPrevShot[0] = 0
                     self.dataPrevShot[6] = True#    Makes state 3 a virgin again (like me)
+
+            if self.dataPS[row][col+1] == red:
+                state = 4
+                self.dataPrevShot[0] = 4
+                self.dataPrevShot[6] = True
 
 
         if direction == "R":
@@ -1426,9 +1450,14 @@ class Board:
                 self.dataAT[row][col-1] = blue   #Moves onto next state
                 if len(groupHits)-sunkLength > 0: #Moves onto the next state
                     state = 4
-                    state = 0 #Temporary Shortcut Delete when state 4 Exists
-                    self.dataPrevShot[0] = 0
-                    self.dataPrevShot[6] = True#    Makes state 3 a virgin again (like me)      
+                    # state = 0 #Temporary Shortcut Delete when state 4 Exists
+                    self.dataPrevShot[0] = 4
+                    self.dataPrevShot[6] = True#    Makes state 3 a virgin again (like me)     
+
+            if self.dataPS[row][col-1] == red:
+                state = 4
+                self.dataPrevShot[0] = 4
+                self.dataPrevShot[6] = True 
 
     def stateFour(self):
         """
@@ -1440,9 +1469,45 @@ class Board:
         useful to create a perimeter function now. It will define it's true perimeter as what is "weird".
 
         We have to make sure that we remember the previous orientation of the streak that we hit, to make sure that the next selection of hits is orthogonal to that
+
+        Not only this, but we will have to create a way so that once it gets to state three and finishes, it then goes to the next possible perimeter. 
         """
         totalHits = d.dataPrevShot[1]
+        Hitsleft = copy.deepcopy(totalHits)
+        sunkLength = self.dataPrevShot[4]
+        direction = self.dataPrevShot[3]
 
+          
+        for i in range(sunkLength):
+            Hitsleft.pop()     #Removes the last item of a lsit of the hits we want to consider a specific amount of times
+        d.possibilityPerimeter(Hitsleft)
+        targetChoice = random.choice(Hitsleft)      #We randomly choose a target of the perimeter and then remove that from the list of targets
+        Hitsleft.remove(targetChoice)
+
+        # For when it is vertically oriented, this is used
+        if direction == "U" or direction == "D":
+            #Checks for when it is to the left of something
+            if [targetChoice[0]+1,targetChoice[1]] in totalHits:
+                direction = "R" #Here we want state 3 to go left, so we set it right since state 3 reverses the direction
+                state = 3
+            #Checks for when there is a hit to the left of it, or if it is to the right of a hit
+            if [targetChoice[0]-1,targetChoice[1]] in totalHits:
+                direction = "L" #Here we want state 3 to go left, so we set it right since state 3 reverses the direction
+                state = 3
+            
+        #For when this is horizontally oriented, this is used
+        if direction == "L" or direction == "R":
+            #Checks for when the target choice is above a hit
+            if [targetChoice[0], targetChoice[1]+1] in totalHits:
+                direction = "D" #Here we select down, since we want to go up, we know there is a hit below our target
+                state = 3
+            #Checks for when there is a hit above the target
+            if [targetChoice[0], targetChoice[1]-1] in totalHits:
+                direction = "U" #Here we select up, since we want to go down
+                state = 3
+
+
+       
 
 
     def aiBrain(self):
@@ -1464,12 +1529,19 @@ class Board:
 
                 if state == 0:
                     self.randomCheckerShot()
+                    print("checker Shot")
                 if state == 1:
                     self.stateOne()
+                    print("state 1")
                 if state == 2:
                     self.stateTwo()
+                    print("state 2")
                 if state == 3:
                     self.stateThree()
+                    print("state 3")
+                if state == 4:
+                    self.stateFour()
+                    print("state 4")
 
     def ai2BoardAIVAI(self):
         """Displays the AI board without bottom table of ships sunk. For use in AI v AI games."""
@@ -1903,27 +1975,39 @@ class Board:
         print('Welcome to the AI v AI SMASHDOWN')           #introduction
         print('\n\nwhere my computer will butt heads with itself in a thrilling game of battleship madness')
         print('\n\nNOTE: AI 1 will be referred to as "player" in this game...')
-        time.sleep(6)
+        # time.sleep(6)
+        time.sleep(2)
         print('\n\n\n\n\n\n\n\n\n\n')
         print(d)
         print('AI 1 is shown as the board surrounded in WHITE')
-        time.sleep(4)
+        # time.sleep(4)
+        time.sleep(2)
         print('\n\n\n\n\n\n\n\n\n\n')
         print(d.ai2BoardAIVAI())
         print('AI 2 is shown as the board surrounded in BLACK')
-        time.sleep(4)
+        # time.sleep(4)
+        time.sleep(2)
         print('\n\n\n\n\n\n\n\n\n\n')
         print(d)
         print('AI 1... PLACE YOUR SHIPS')           #AI 1 placing ships
-        time.sleep(4)
+        # time.sleep(4)
+        time.sleep(2)
         print('\n\n\n\n\n\n\n\n\n\n')
-        print(d.randomPlacement('player'))
+        d.placeShip(4,5,"destroyer",'up','player')
+        d.placeShip(4,6,'carrier', 'right', 'player')
+        d.placeShip(4,7, 'battleship', 'right', 'player')
+        d.placeShip(4,8, 'cruiser', 'right', 'player')
+        d.placeShip(4,9, "submarine", 'right', 'player')
+        # print(d.randomPlacement('player'))
+        print(d)
         print('GREAT! AI 1 ships are placed')
-        time.sleep(4)
+        # time.sleep(4)
+        time.sleep(2)
         print('\n\n\n\n\n\n\n\n\n\n')
         print(d.ai2BoardAIVAI())
         print('AI 2... PLACE YOUR SHIPS')           #AI 2 placing ships
-        time.sleep(4)
+        # time.sleep(4)
+        time.sleep(2)
         print('\n\n\n\n\n\n\n\n\n\n')
         d.randomPlacement('ai')
         print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
@@ -1938,13 +2022,13 @@ class Board:
             print(d)
             print('AI 1 TURN')
             d.randomShot('player')
-            time.sleep(.1)
+            time.sleep(.5)
             print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
             print(d.ai2BoardAIVAI())
             print(d)
             print('AI 2 TURN')
             d.aiBrain()
-            time.sleep(.1)
+            time.sleep(.5)
         if d.allSunk('player') == True:
             print('AI 1 WINS!')
             print(d.ai2BoardAIVAI())
