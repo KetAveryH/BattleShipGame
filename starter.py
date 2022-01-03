@@ -127,7 +127,7 @@ class Board:
         self.dataPSL = [[[],[],[],[],[],'good'],[[],[],[],[],'good'],[[],[],[],'good'],[[],[],[],'good'],[[],[],'good']]
         self.dataASL = [[[],[],[],[],[],'good'],[[],[],[],[],'good'],[[],[],[],'good'],[[],[],[],'good'],[[],[],'good']]
         self.dataATC = []
-        self.dataPrevShot = [0,[],[],[],0,[],True, [], []] #7 is for perimeter on target board of Ai #8 is for perimeter on target board of player
+        self.dataPrevShot = [0,[],[],[],0,[],True, [], []] #7 is for perimeter on target board of Ai #8 is for perimeter on target board of player #5 is target hits
         self.scoreboard = [0,0]#  Player1/Player wins, vs AI/Player 2 wins
 
     def __repr__(self):
@@ -1261,7 +1261,7 @@ class Board:
                     correspondingOri[0].remove('D') 
                 self.dataPrevShot[6] = False
             else:
-                col = groupHits[-1][0]
+                col = groupHits[-1][0]  
                 row = groupHits[-1][1]
                 if 'D' in correspondingOri[-1]:
                     correspondingOri[-1].remove('D')
@@ -1282,15 +1282,15 @@ class Board:
                     sunkLength += 4
                 if orStateCarrier == False and self.carrierSunk('player') == True: 
                     sunkLength += 5
-                if sunkLength == len(groupHits):
+                if sunkLength == len(groupHits):    
                     state = 0
                     self.dataPrevShot[0] = 0
                     self.dataPrevShot[6] = True#   Makes it a virgin again
 
-            if self.dataPS[row+1][col] == blue:    
+            if self.dataPS[row+1][col] == blue:     
                 print("AI Targeted", revertCord(col), row+1, " and Missed!")
                 self.dataAT[row+1][col] = blue   #Moves onto next state
-                if len(groupHits)-sunkLength > 0: #Moves onto the next state
+                if len(groupHits)-sunkLength > 0: #Moves onto the next state        #If total amount of hits is not equal to the amount of hits that resulted in a sink, we move to state 4
                     state = 4
                     state = 0 #Temporary Shortcut Delete when state 4 Exists
                     self.dataPrevShot[0] = 0
@@ -1438,7 +1438,12 @@ class Board:
         However, if you do sink a ship the program is coded to stop at that point, and remove the most recent hits from it's immediate memory, 
         which will be stored in self.dataPrevShot[5], "target hits". It will then choose the perimeter of the remaining "target hits". It would be
         useful to create a perimeter function now. It will define it's true perimeter as what is "weird".
+
+        We have to make sure that we remember the previous orientation of the streak that we hit, to make sure that the next selection of hits is orthogonal to that
         """
+        totalHits = d.dataPrevShot[1]
+
+
 
     def aiBrain(self):
                 """
